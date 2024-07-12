@@ -1,11 +1,11 @@
-use injective_std::types::cosmos::bank::v1beta1::{
+use neutron_std::types::cosmos::bank::v1beta1::{
     MsgSend, MsgSendResponse, QueryAllBalancesRequest, QueryAllBalancesResponse,
     QueryBalanceRequest, QueryBalanceResponse, QueryTotalSupplyRequest, QueryTotalSupplyResponse,
 };
-use test_tube_inj::{fn_execute, fn_query};
+use test_tube_ntrn::{fn_execute, fn_query};
 
-use test_tube_inj::module::Module;
-use test_tube_inj::runner::Runner;
+use test_tube_ntrn::module::Module;
+use test_tube_ntrn::runner::Runner;
 
 pub struct Bank<'a, R: Runner<'a>> {
     runner: &'a R,
@@ -41,15 +41,15 @@ where
 #[cfg(test)]
 mod tests {
     use cosmwasm_std::Coin;
-    use injective_std::types::cosmos::bank::v1beta1::{MsgSend, QueryBalanceRequest};
-    use injective_std::types::cosmos::base::v1beta1::Coin as BaseCoin;
+    use neutron_std::types::cosmos::bank::v1beta1::{MsgSend, QueryBalanceRequest};
+    use neutron_std::types::cosmos::base::v1beta1::Coin as BaseCoin;
 
-    use crate::{Account, Bank, InjectiveTestApp};
-    use test_tube_inj::Module;
+    use crate::{Account, Bank, NeutronTestApp};
+    use test_tube_ntrn::Module;
 
     #[test]
     fn bank_integration() {
-        let app = InjectiveTestApp::new();
+        let app = NeutronTestApp::new();
         let signer = app
             .init_account(&[Coin::new(100_000_000_000_000_000_000u128, "inj")])
             .unwrap();

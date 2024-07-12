@@ -1,11 +1,11 @@
-use injective_std::types::cosmos::gov::v1::{
+use neutron_std::types::cosmos::gov::v1::{
     MsgSubmitProposal, MsgSubmitProposalResponse, MsgVote, MsgVoteResponse, QueryProposalRequest,
     QueryProposalResponse,
 };
-use injective_std::types::cosmos::gov::v1beta1;
-use test_tube_inj::module::Module;
-use test_tube_inj::runner::Runner;
-use test_tube_inj::{fn_execute, fn_query};
+use neutron_std::types::cosmos::gov::v1beta1;
+use test_tube_ntrn::module::Module;
+use test_tube_ntrn::runner::Runner;
+use test_tube_ntrn::{fn_execute, fn_query};
 
 pub struct Gov<'a, R: Runner<'a>> {
     runner: &'a R,

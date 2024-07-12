@@ -3,6 +3,7 @@ extern crate core;
 use std::{env, path::PathBuf, process::Command};
 
 fn main() {
+    println!("cargo:rerun-if-changed=build.rs");
     let manifest_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
     let prebuilt_lib_dir = manifest_dir.join("libntrntesttube").join("artifacts");
 

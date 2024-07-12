@@ -1,12 +1,12 @@
-use injective_std::types::cosmos::authz::v1beta1::{
+use neutron_std::types::cosmos::authz::v1beta1::{
     MsgExec, MsgExecResponse, MsgGrant, MsgGrantResponse, QueryGranteeGrantsRequest,
     QueryGranteeGrantsResponse, QueryGranterGrantsRequest, QueryGranterGrantsResponse,
     QueryGrantsRequest, QueryGrantsResponse,
 };
-use test_tube_inj::{fn_execute, fn_query};
+use test_tube_ntrn::{fn_execute, fn_query};
 
-use test_tube_inj::module::Module;
-use test_tube_inj::runner::Runner;
+use test_tube_ntrn::module::Module;
+use test_tube_ntrn::runner::Runner;
 
 pub struct Authz<'a, R: Runner<'a>> {
     runner: &'a R,
@@ -46,8 +46,8 @@ where
 #[cfg(test)]
 mod tests {
     use cosmwasm_std::Coin;
-    use injective_std::shim::Any;
-    use injective_std::types::{
+    use neutron_std::shim::Any;
+    use neutron_std::types::{
         cosmos::authz::v1beta1::{
             GenericAuthorization, Grant, GrantAuthorization, MsgExec, MsgGrant,
             QueryGranteeGrantsRequest, QueryGranterGrantsRequest,
@@ -57,20 +57,20 @@ mod tests {
     };
     use prost::Message;
 
-    use crate::{Account, Authz, Bank, InjectiveTestApp};
-    use test_tube_inj::Module;
+    use crate::{Account, Authz, Bank, NeutronTestApp};
+    use test_tube_ntrn::Module;
 
     #[test]
     fn authz_integration() {
-        let app = InjectiveTestApp::new();
+        let app = NeutronTestApp::new();
         let signer = app
             .init_account(&[
-                Coin::new(100_000_000_000_000_000_000u128, "inj"),
+                Coin::new(100_000_000_000_000_000_000u128, "untrn"),
                 Coin::new(10u128, "usdc"),
             ])
             .unwrap();
         let receiver = app
-            .init_account(&[Coin::new(1_000_000_000_000u128, "inj")])
+            .init_account(&[Coin::new(1_000_000_000_000u128, "untrn")])
             .unwrap();
         let authz = Authz::new(&app);
         let bank = Bank::new(&app);
@@ -135,7 +135,7 @@ mod tests {
         let mut buf_2 = vec![];
         GenericAuthorization::encode(
             &GenericAuthorization {
-                msg: "/injective.exchange.v1beta1.MsgCreateSpotLimitOrder".to_string(),
+                msg: "/untrnective.exchange.v1beta1.MsgCreateSpotLimitOrder".to_string(),
             },
             &mut buf_2,
         )

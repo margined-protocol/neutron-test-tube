@@ -6,9 +6,9 @@ use cosmrs::proto::cosmwasm::wasm::v1::{
 use cosmwasm_std::Coin;
 use serde::{de::DeserializeOwned, Serialize};
 
-use test_tube_inj::runner::error::{DecodeError, EncodeError, RunnerError};
-use test_tube_inj::runner::result::{RunnerExecuteResult, RunnerResult};
-use test_tube_inj::{
+use test_tube_ntrn::runner::error::{DecodeError, EncodeError, RunnerError};
+use test_tube_ntrn::runner::result::{RunnerExecuteResult, RunnerResult};
+use test_tube_ntrn::{
     account::{Account, SigningAccount},
     runner::Runner,
 };

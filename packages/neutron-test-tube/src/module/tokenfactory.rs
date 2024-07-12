@@ -1,4 +1,4 @@
-use injective_std::types::injective::tokenfactory::v1beta1::{
+use neutron_std::types::osmosis::tokenfactory::v1beta1::{
     MsgBurn, MsgBurnResponse, MsgChangeAdmin, MsgChangeAdminResponse, MsgCreateDenom,
     MsgCreateDenomResponse, MsgMint, MsgMintResponse, MsgSetDenomMetadata,
     MsgSetDenomMetadataResponse, QueryDenomAuthorityMetadataRequest,
@@ -6,9 +6,9 @@ use injective_std::types::injective::tokenfactory::v1beta1::{
     QueryDenomsFromCreatorResponse, QueryParamsRequest, QueryParamsResponse,
 };
 
-use test_tube_inj::module::Module;
-use test_tube_inj::runner::Runner;
-use test_tube_inj::{fn_execute, fn_query};
+use test_tube_ntrn::module::Module;
+use test_tube_ntrn::runner::Runner;
+use test_tube_ntrn::{fn_execute, fn_query};
 
 pub struct TokenFactory<'a, R: Runner<'a>> {
     runner: &'a R,
@@ -25,54 +25,52 @@ where
     R: Runner<'a>,
 {
     fn_execute! {
-        pub create_denom: MsgCreateDenom ["/injective.tokenfactory.v1beta1.MsgCreateDenom"] => MsgCreateDenomResponse
-    }
-
-    // NOTE: mint and burn are not supported until we create rust types for injective with the relevant proto as they
-    // diverge from the Osmosis types, and the msg.rs in injective-cosmwasm does not suffice
-    fn_execute! {
-        pub mint: MsgMint ["/injective.tokenfactory.v1beta1.MsgMint"]  => MsgMintResponse
+        pub create_denom: MsgCreateDenom ["/osmosis.tokenfactory.v1beta1.MsgCreateDenom"] => MsgCreateDenomResponse
     }
 
     fn_execute! {
-        pub burn: MsgBurn ["/injective.tokenfactory.v1beta1.MsgBurn"] => MsgBurnResponse
+        pub mint: MsgMint ["/osmosis.tokenfactory.v1beta1.MsgMint"]  => MsgMintResponse
     }
 
     fn_execute! {
-        pub change_admin: MsgChangeAdmin ["/injective.tokenfactory.v1beta1.MsgChangeAdmin"]  => MsgChangeAdminResponse
+        pub burn: MsgBurn ["/osmosis.tokenfactory.v1beta1.MsgBurn"] => MsgBurnResponse
     }
 
     fn_execute! {
-        pub set_denom_metadata: MsgSetDenomMetadata  ["/injective.tokenfactory.v1beta1.MsgSetDenomMetadata"]  => MsgSetDenomMetadataResponse
+        pub change_admin: MsgChangeAdmin ["/osmosis.tokenfactory.v1beta1.MsgChangeAdmin"]  => MsgChangeAdminResponse
+    }
+
+    fn_execute! {
+        pub set_denom_metadata: MsgSetDenomMetadata  ["/osmosis.tokenfactory.v1beta1.MsgSetDenomMetadata"]  => MsgSetDenomMetadataResponse
     }
 
     fn_query! {
-        pub query_params ["/injective.tokenfactory.v1beta1.Query/Params"]: QueryParamsRequest => QueryParamsResponse
+        pub query_params ["/osmosis.tokenfactory.v1beta1.Query/Params"]: QueryParamsRequest => QueryParamsResponse
     }
 
     fn_query! {
-        pub query_denom_authority_metadata ["/injective.tokenfactory.v1beta1.Query/DenomAuthorityMetadata"]: QueryDenomAuthorityMetadataRequest => QueryDenomAuthorityMetadataResponse
+        pub query_denom_authority_metadata ["/osmosis.tokenfactory.v1beta1.Query/DenomAuthorityMetadata"]: QueryDenomAuthorityMetadataRequest => QueryDenomAuthorityMetadataResponse
     }
 
     fn_query! {
-        pub query_denoms_from_creator ["/injective.tokenfactory.v1beta1.Query/DenomsFromCreator"]: QueryDenomsFromCreatorRequest => QueryDenomsFromCreatorResponse
+        pub query_denoms_from_creator ["/osmosis.tokenfactory.v1beta1.Query/DenomsFromCreator"]: QueryDenomsFromCreatorRequest => QueryDenomsFromCreatorResponse
     }
 }
 
 #[cfg(test)]
 mod tests {
     use cosmwasm_std::Coin;
-    use injective_std::types::cosmos::bank::v1beta1::QueryBalanceRequest;
-    use injective_std::types::injective::tokenfactory::v1beta1::{
+    use neutron_std::types::cosmos::bank::v1beta1::QueryBalanceRequest;
+    use neutron_std::types::osmosis::tokenfactory::v1beta1::{
         MsgBurn, MsgCreateDenom, MsgMint, QueryDenomsFromCreatorRequest,
     };
 
-    use crate::{Account, Bank, InjectiveTestApp, TokenFactory};
-    use test_tube_inj::Module;
+    use crate::{Account, Bank, NeutronTestApp, TokenFactory};
+    use test_tube_ntrn::Module;
 
     #[test]
     fn tokenfactory_integration() {
-        let app = InjectiveTestApp::new();
+        let app = NeutronTestApp::new();
         let signer = app
             .init_account(&[Coin::new(100_000_000_000_000_000_000u128, "inj")])
             .unwrap();
@@ -88,8 +86,6 @@ mod tests {
                 MsgCreateDenom {
                     sender: signer.address(),
                     subdenom: subdenom.to_owned(),
-                    name: "denom".to_owned(),
-                    symbol: "DNM".to_owned(),
                 },
                 &signer,
             )
@@ -110,13 +106,14 @@ mod tests {
         assert_eq!(denoms, [denom.clone()]);
 
         // TODO mint new denom
-        let coin: injective_std::types::cosmos::base::v1beta1::Coin =
+        let coin: neutron_std::types::cosmos::base::v1beta1::Coin =
             Coin::new(1000000000, denom.clone()).into();
         tokenfactory
             .mint(
                 MsgMint {
                     sender: signer.address(),
                     amount: Some(coin.clone()),
+                    mint_to_address: signer.address(),
                 },
                 &signer,
             )
@@ -140,6 +137,7 @@ mod tests {
                 MsgBurn {
                     sender: signer.address(),
                     amount: Some(coin.clone()),
+                    burn_from_address: signer.address(),
                 },
                 &signer,
             )
