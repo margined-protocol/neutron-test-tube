@@ -215,7 +215,7 @@ extern "C" {
     pub fn InitAccount(envId: GoUint64, coinsJson: GoString) -> *mut ::std::os::raw::c_char;
 }
 extern "C" {
-    pub fn FinalizeBlock(envId: GoUint64, tx: GoString, seconds: GoInt64);
+    pub fn FinalizeBlock(envId: GoUint64, tx: GoString) -> *mut ::std::os::raw::c_char;
 }
 extern "C" {
     pub fn IncreaseTime(envId: GoUint64, seconds: GoInt64);

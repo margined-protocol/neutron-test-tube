@@ -3,7 +3,7 @@ use std::ffi::CString;
 use base64::engine::general_purpose::STANDARD as BASE64_STANDARD;
 use base64::Engine as _;
 use cosmrs::crypto::secp256k1::SigningKey;
-use cosmrs::proto::tendermint::v0_37::abci::{RequestDeliverTx, ResponseDeliverTx};
+use cosmrs::proto::tendermint::v0_38::abci::{RequestFinalizeBlock, ResponseFinalizeBlock};
 use cosmrs::tx::{Fee, SignerInfo};
 use cosmrs::{tx, Any};
 use cosmwasm_std::Coin;
@@ -11,9 +11,9 @@ use prost::Message;
 
 use crate::account::{Account, FeeSetting, SigningAccount};
 use crate::bindings::{
-    AccountNumber, AccountSequence, EnableIncreasingBlockTimeInEndBlocker, Execute, GetBlockHeight,
-    GetBlockTime, GetParamSet, GetValidatorAddress, GetValidatorPrivateKey, IncreaseTime,
-    InitAccount, InitTestEnv, Query, SetParamSet, Simulate,
+    AccountNumber, AccountSequence, EnableIncreasingBlockTimeInEndBlocker, Execute, FinalizeBlock,
+    GetBlockHeight, GetBlockTime, GetParamSet, GetValidatorAddress, GetValidatorPrivateKey,
+    IncreaseTime, InitAccount, InitTestEnv, Query, SetParamSet, Simulate,
 };
 use crate::runner::error::{DecodeError, EncodeError, RunnerError};
 use crate::runner::result::RawResult;
@@ -21,7 +21,7 @@ use crate::runner::result::{RunnerExecuteResult, RunnerResult};
 use crate::runner::Runner;
 use crate::{redefine_as_go_string, ExecuteResponse};
 
-pub const OSMOSIS_MIN_GAS_PRICE: u128 = 2_500;
+pub const NEUTRON_MIN_GAS_PRICE: u128 = 2_500;
 
 #[derive(Debug, PartialEq)]
 pub struct BaseApp {
@@ -107,7 +107,7 @@ impl BaseApp {
             "inj".to_string(),
             signing_key,
             FeeSetting::Auto {
-                gas_price: Coin::new(OSMOSIS_MIN_GAS_PRICE, denom),
+                gas_price: Coin::new(NEUTRON_MIN_GAS_PRICE, denom),
                 gas_adjustment,
             },
         );
@@ -124,51 +124,54 @@ impl BaseApp {
     pub fn get_block_height(&self) -> i64 {
         unsafe { GetBlockHeight(self.id) }
     }
-    // /// Initialize account with initial balance of any coins.
-    // /// This function mints new coins and send to newly created account
-    // pub fn init_account(&self, coins: &[Coin]) -> RunnerResult<SigningAccount> {
-    //     let mut coins = coins.to_vec();
+    /// Initialize account with initial balance of any coins.
+    /// This function mints new coins and send to newly created account
+    pub fn init_account(&self, coins: &[Coin]) -> RunnerResult<SigningAccount> {
+        let mut coins = coins.to_vec();
 
-    //     // invalid coins if denom are unsorted
-    //     coins.sort_by(|a, b| a.denom.cmp(&b.denom));
+        // invalid coins if denom are unsorted
+        coins.sort_by(|a, b| a.denom.cmp(&b.denom));
 
-    //     let coins_json = serde_json::to_string(&coins).map_err(EncodeError::JsonEncodeError)?;
-    //     redefine_as_go_string!(coins_json);
+        let coins_json = serde_json::to_string(&coins).map_err(EncodeError::JsonEncodeError)?;
+        redefine_as_go_string!(coins_json);
 
-    //     let base64_priv = unsafe {
-    //         BeginBlock(self.id);
-    //         let addr = InitAccount(self.id, coins_json);
-    //         EndBlock(self.id);
-    //         CString::from_raw(addr)
-    //     }
-    //     .to_str()
-    //     .map_err(DecodeError::Utf8Error)?
-    //     .to_string();
+        let empty_tx = "".to_string();
+        redefine_as_go_string!(empty_tx);
 
-    //     let secp256k1_priv = BASE64_STANDARD
-    //         .decode(base64_priv)
-    //         .map_err(DecodeError::Base64DecodeError)?;
+        let base64_priv = unsafe {
+            // BeginBlock(self.id);
+            let addr = InitAccount(self.id, coins_json);
+            FinalizeBlock(self.id, empty_tx);
+            CString::from_raw(addr)
+        }
+        .to_str()
+        .map_err(DecodeError::Utf8Error)?
+        .to_string();
 
-    //     let signing_key = SigningKey::from_slice(&secp256k1_priv).map_err(|e| {
-    //         let msg = e.to_string();
-    //         DecodeError::SigningKeyDecodeError { msg }
-    //     })?;
+        let secp256k1_priv = BASE64_STANDARD
+            .decode(base64_priv)
+            .map_err(DecodeError::Base64DecodeError)?;
 
-    //     Ok(SigningAccount::new(
-    //         self.address_prefix.clone(),
-    //         signing_key,
-    //         FeeSetting::Auto {
-    //             gas_price: Coin::new(OSMOSIS_MIN_GAS_PRICE, self.fee_denom.clone()),
-    //             gas_adjustment: self.default_gas_adjustment,
-    //         },
-    //     ))
-    // }
+        let signing_key = SigningKey::from_slice(&secp256k1_priv).map_err(|e| {
+            let msg = e.to_string();
+            DecodeError::SigningKeyDecodeError { msg }
+        })?;
 
-    // /// Convinience function to create multiple accounts with the same
-    // /// Initial coins balance
-    // pub fn init_accounts(&self, coins: &[Coin], count: u64) -> RunnerResult<Vec<SigningAccount>> {
-    //     (0..count).map(|_| self.init_account(coins)).collect()
-    // }
+        Ok(SigningAccount::new(
+            self.address_prefix.clone(),
+            signing_key,
+            FeeSetting::Auto {
+                gas_price: Coin::new(NEUTRON_MIN_GAS_PRICE, self.fee_denom.clone()),
+                gas_adjustment: self.default_gas_adjustment,
+            },
+        ))
+    }
+
+    /// Convinience function to create multiple accounts with the same
+    /// Initial coins balance
+    pub fn init_accounts(&self, coins: &[Coin], count: u64) -> RunnerResult<Vec<SigningAccount>> {
+        (0..count).map(|_| self.init_account(coins)).collect()
+    }
 
     fn create_signed_tx<I>(
         &self,
@@ -179,6 +182,7 @@ impl BaseApp {
     where
         I: IntoIterator<Item = cosmrs::Any>,
     {
+        println!("Creating signed tx");
         let tx_body = tx::Body::new(msgs, "", 0u32);
         let addr = signer.address();
 
@@ -186,7 +190,12 @@ impl BaseApp {
 
         let seq = unsafe { AccountSequence(self.id, addr) };
 
+        println!("Account sequence: {:?}", seq);
+
         let account_number = unsafe { AccountNumber(self.id, addr) };
+
+        println!("Account number: {:?}", account_number);
+
         let signer_info = SignerInfo::single_direct(Some(signer.public_key()), seq);
         let auth_info = signer_info.auth_info(fee);
         let sign_doc = tx::SignDoc::new(
@@ -204,6 +213,8 @@ impl BaseApp {
         })?;
 
         let tx_raw = sign_doc.sign(signer.signing_key()).unwrap();
+
+        println!("Tx raw: {:?}", tx_raw);
 
         tx_raw
             .to_bytes()
@@ -225,7 +236,7 @@ impl BaseApp {
         let zero_fee = Fee::from_amount_and_gas(
             cosmrs::Coin {
                 denom: self.fee_denom.parse().unwrap(),
-                amount: OSMOSIS_MIN_GAS_PRICE,
+                amount: NEUTRON_MIN_GAS_PRICE,
             },
             0u64,
         );
@@ -248,6 +259,7 @@ impl BaseApp {
     where
         I: IntoIterator<Item = cosmrs::Any>,
     {
+        println!("Estimating fee");
         let res = match &signer.fee_setting() {
             FeeSetting::Auto {
                 gas_price,
@@ -274,17 +286,16 @@ impl BaseApp {
     /// Ensure that all execution that happens in `execution` happens in a block
     /// and end block properly, no matter it suceeds or fails.
     // unsafe fn run_block<T, E>(&self, execution: impl Fn() -> Result<T, E>) -> Result<T, E> {
-    //     // unsafe { BeginBlock(self.id) };
-    //     // match execution() {
-    //     //     ok @ Ok(_) => {
-    //     //         unsafe { EndBlock(self.id) };
-    //     //         ok
-    //     //     }
-    //     //     err @ Err(_) => {
-    //     //         unsafe { EndBlock(self.id) };
-    //     //         err
-    //     //     }
-    //     // }
+    //     match execution() {
+    //         ok @ Ok(_) => {
+    //             unsafe { FinalizeBlock(self.id) };
+    //             ok
+    //         }
+    //         err @ Err(_) => {
+    //             unsafe { FinalizeBlock(self.id) };
+    //             err
+    //         }
+    //     }
     // }
 
     /// Set parameter set for a given subspace.
@@ -320,77 +331,81 @@ impl BaseApp {
             Ok(pset)
         }
     }
-
-    // Block time will be incremented in End Blocker instead of Begin Blocker. Use with caution!
-    pub fn enable_increasing_block_time_in_end_blocker(&self) {
-        unsafe { EnableIncreasingBlockTimeInEndBlocker(self.id) }
-    }
 }
 
 impl<'a> Runner<'a> for BaseApp {
-    // fn execute_multiple<M, R>(
-    //     &self,
-    //     msgs: &[(M, &str)],
-    //     signer: &SigningAccount,
-    // ) -> RunnerExecuteResult<R>
-    // where
-    //     M: ::prost::Message,
-    //     R: ::prost::Message + Default,
-    // {
-    //     let msgs = msgs
-    //         .iter()
-    //         .map(|(msg, type_url)| {
-    //             let mut buf = Vec::new();
-    //             M::encode(msg, &mut buf).map_err(EncodeError::ProtoEncodeError)?;
+    fn execute_multiple<M, R>(
+        &self,
+        msgs: &[(M, &str)],
+        signer: &SigningAccount,
+    ) -> RunnerExecuteResult<R>
+    where
+        M: ::prost::Message,
+        R: ::prost::Message + Default,
+    {
+        let msgs = msgs
+            .iter()
+            .map(|(msg, type_url)| {
+                let mut buf = Vec::new();
+                M::encode(msg, &mut buf).map_err(EncodeError::ProtoEncodeError)?;
 
-    //             Ok(cosmrs::Any {
-    //                 type_url: type_url.to_string(),
-    //                 value: buf,
-    //             })
-    //         })
-    //         .collect::<Result<Vec<cosmrs::Any>, RunnerError>>()?;
+                Ok(cosmrs::Any {
+                    type_url: type_url.to_string(),
+                    value: buf,
+                })
+            })
+            .collect::<Result<Vec<cosmrs::Any>, RunnerError>>()?;
 
-    //     self.execute_multiple_raw(msgs, signer)
-    // }
+        self.execute_multiple_raw(msgs, signer)
+    }
 
-    // fn execute_multiple_raw<R>(
-    //     &self,
-    //     msgs: Vec<cosmrs::Any>,
-    //     signer: &SigningAccount,
-    // ) -> RunnerExecuteResult<R>
-    // where
-    //     R: ::prost::Message + Default,
-    // {
-    //     unsafe {
-    //         self.run_block(|| {
-    //             let fee = match &signer.fee_setting() {
-    //                 FeeSetting::Auto { .. } => self.estimate_fee(msgs.clone(), signer)?,
-    //                 FeeSetting::Custom { amount, gas_limit } => Fee::from_amount_and_gas(
-    //                     cosmrs::Coin {
-    //                         denom: amount.denom.parse().unwrap(),
-    //                         amount: amount.amount.to_string().parse().unwrap(),
-    //                     },
-    //                     *gas_limit,
-    //                 ),
-    //             };
+    fn execute_multiple_raw<R>(
+        &self,
+        msgs: Vec<cosmrs::Any>,
+        signer: &SigningAccount,
+    ) -> RunnerExecuteResult<R>
+    where
+        R: ::prost::Message + Default,
+    {
+        unsafe {
+            println!("Executing multiple raw");
+            println!("msgs: {:?}", msgs);
+            let fee = match &signer.fee_setting() {
+                FeeSetting::Auto { .. } => self.estimate_fee(msgs.clone(), signer)?,
+                FeeSetting::Custom { amount, gas_limit } => Fee::from_amount_and_gas(
+                    cosmrs::Coin {
+                        denom: amount.denom.parse().unwrap(),
+                        amount: amount.amount.to_string().parse().unwrap(),
+                    },
+                    *gas_limit,
+                ),
+            };
 
-    //             let tx = self.create_signed_tx(msgs.clone(), signer, fee)?;
-    //             let mut buf = Vec::new();
-    //             RequestDeliverTx::encode(&RequestDeliverTx { tx: tx.into() }, &mut buf)
-    //                 .map_err(EncodeError::ProtoEncodeError)?;
+            println!("here?");
 
-    //             let base64_req = BASE64_STANDARD.encode(buf);
-    //             redefine_as_go_string!(base64_req);
+            let tx = self.create_signed_tx(msgs.clone(), signer, fee)?;
+            let base64_tx_bytes = BASE64_STANDARD.encode(tx);
 
-    //             let res = Execute(self.id, base64_req);
-    //             let res = RawResult::from_non_null_ptr(res).into_result()?;
+            redefine_as_go_string!(base64_tx_bytes);
+            // let mut buf = Vec::new();
+            // RequestDeliverTx::encode(&RequestDeliverTx { tx: tx.into() }, &mut buf)
+            //     .map_err(EncodeError::ProtoEncodeError)?;
 
-    //             ResponseDeliverTx::decode(res.as_slice())
-    //                 .unwrap()
-    //                 .try_into()
-    //         })
-    //     }
-    // }
+            // let base64_req = BASE64_STANDARD.encode(buf);
+
+            let res = FinalizeBlock(self.id, base64_tx_bytes);
+            let res = RawResult::from_non_null_ptr(res).into_result()?;
+
+            // NOTE: this returns bullshit atm
+            let res = ResponseFinalizeBlock::decode(res.as_slice())
+                .unwrap()
+                .try_into();
+
+            println!("res: {:?}", res);
+
+            res
+        }
+    }
 
     fn query<Q, R>(&self, path: &str, q: &Q) -> RunnerResult<R>
     where

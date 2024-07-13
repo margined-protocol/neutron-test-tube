@@ -10,7 +10,7 @@ use test_tube_ntrn::runner::Runner;
 use test_tube_ntrn::BaseApp;
 
 const FEE_DENOM: &str = "untrn";
-const INJ_ADDRESS_PREFIX: &str = "neutron";
+const NEUTRON_ADDRESS_PREFIX: &str = "neutron";
 const CHAIN_ID: &str = "neutron-666";
 const DEFAULT_GAS_ADJUSTMENT: f64 = 1.2;
 
@@ -31,7 +31,7 @@ impl NeutronTestApp {
             inner: BaseApp::new(
                 FEE_DENOM,
                 CHAIN_ID,
-                INJ_ADDRESS_PREFIX,
+                NEUTRON_ADDRESS_PREFIX,
                 DEFAULT_GAS_ADJUSTMENT,
             ),
         }
@@ -77,16 +77,16 @@ impl NeutronTestApp {
         self.inner.increase_time(seconds)
     }
 
-    // /// Initialize account with initial balance of any coins.
-    // /// This function mints new coins and send to newly created account
-    // pub fn init_account(&self, coins: &[Coin]) -> RunnerResult<SigningAccount> {
-    //     self.inner.init_account(coins)
-    // }
-    // /// Convinience function to create multiple accounts with the same
-    // /// Initial coins balance
-    // pub fn init_accounts(&self, coins: &[Coin], count: u64) -> RunnerResult<Vec<SigningAccount>> {
-    //     self.inner.init_accounts(coins, count)
-    // }
+    /// Initialize account with initial balance of any coins.
+    /// This function mints new coins and send to newly created account
+    pub fn init_account(&self, coins: &[Coin]) -> RunnerResult<SigningAccount> {
+        self.inner.init_account(coins)
+    }
+    /// Convinience function to create multiple accounts with the same
+    /// Initial coins balance
+    pub fn init_accounts(&self, coins: &[Coin], count: u64) -> RunnerResult<Vec<SigningAccount>> {
+        self.inner.init_accounts(coins, count)
+    }
 
     /// Simulate transaction execution and return gas info
     pub fn simulate_tx<I>(
@@ -113,55 +113,40 @@ impl NeutronTestApp {
     ) -> RunnerResult<P> {
         self.inner.get_param_set(subspace, type_url)
     }
-
-    pub fn enable_increasing_block_time_in_end_blocker(&self) {
-        self.inner.enable_increasing_block_time_in_end_blocker()
-    }
 }
 
-// impl<'a> Runner<'a> for NeutronTestApp {
-//     fn execute_multiple<M, R>(
-//         &self,
-//         msgs: &[(M, &str)],
-//         signer: &SigningAccount,
-//     ) -> RunnerExecuteResult<R>
-//     where
-//         M: ::prost::Message,
-//         R: ::prost::Message + Default,
-//     {
-//         self.inner.execute_multiple(msgs, signer)
-//     }
+impl<'a> Runner<'a> for NeutronTestApp {
+    fn execute_multiple<M, R>(
+        &self,
+        msgs: &[(M, &str)],
+        signer: &SigningAccount,
+    ) -> RunnerExecuteResult<R>
+    where
+        M: ::prost::Message,
+        R: ::prost::Message + Default,
+    {
+        self.inner.execute_multiple(msgs, signer)
+    }
 
-//     fn execute_single_block<M, R>(
-//         &self,
-//         msgs: &[(M, &str, &SigningAccount)],
-//     ) -> RunnerExecuteResultMult<R>
-//     where
-//         M: ::prost::Message,
-//         R: ::prost::Message + Default,
-//     {
-//         self.inner.execute_single_block(msgs)
-//     }
+    fn query<Q, R>(&self, path: &str, q: &Q) -> RunnerResult<R>
+    where
+        Q: ::prost::Message,
+        R: ::prost::Message + Default,
+    {
+        self.inner.query(path, q)
+    }
 
-//     fn query<Q, R>(&self, path: &str, q: &Q) -> RunnerResult<R>
-//     where
-//         Q: ::prost::Message,
-//         R: ::prost::Message + Default,
-//     {
-//         self.inner.query(path, q)
-//     }
-
-//     fn execute_multiple_raw<R>(
-//         &self,
-//         msgs: Vec<cosmrs::Any>,
-//         signer: &SigningAccount,
-//     ) -> RunnerExecuteResult<R>
-//     where
-//         R: prost::Message + Default,
-//     {
-//         self.inner.execute_multiple_raw(msgs, signer)
-//     }
-// }
+    fn execute_multiple_raw<R>(
+        &self,
+        msgs: Vec<cosmrs::Any>,
+        signer: &SigningAccount,
+    ) -> RunnerExecuteResult<R>
+    where
+        R: prost::Message + Default,
+    {
+        self.inner.execute_multiple_raw(msgs, signer)
+    }
+}
 
 #[cfg(test)]
 mod tests {
@@ -186,181 +171,177 @@ mod tests {
     fn test_init_account() {
         let app = NeutronTestApp::default();
 
-        let account = app.init_account(&coins(100_000_000_000, "untrn")).unwrap();
-
-        assert!(account.is_some());
-        // assert!(accounts.get(1).is_some());
-        // assert!(accounts.get(2).is_some());
-        // assert!(accounts.get(3).is_none());
+        // Just check it doesn't panic
+        app.init_account(&coins(100_000_000_000, "untrn")).unwrap();
     }
 
     #[test]
     fn test_init_accounts() {
         let app = NeutronTestApp::default();
 
-        // let accounts = app
-        //     .init_accounts(&coins(100_000_000_000, "untrn"), 3)
-        //     .unwrap();
+        let accounts = app
+            .init_accounts(&coins(100_000_000_000, "untrn"), 3)
+            .unwrap();
 
-        // assert!(accounts.get(0).is_some());
-        // assert!(accounts.get(1).is_some());
-        // assert!(accounts.get(2).is_some());
-        // assert!(accounts.get(3).is_none());
+        assert!(accounts.get(0).is_some());
+        assert!(accounts.get(1).is_some());
+        assert!(accounts.get(2).is_some());
+        assert!(accounts.get(3).is_none());
     }
 
-    // #[test]
-    // fn test_get_and_set_block_timestamp() {
-    //     println!("test_get_and_set_block_timestamp");
-    //     let app = NeutronTestApp::default();
+    #[test]
+    fn test_get_and_set_block_timestamp() {
+        let app = NeutronTestApp::default();
 
-    //     let block_time_nanos = app.get_block_time_nanos();
-    //     let block_time_seconds = app.get_block_time_seconds();
+        let block_time_nanos = app.get_block_time_nanos();
+        let block_time_seconds = app.get_block_time_seconds();
 
-    //     app.increase_time(10u64);
+        app.increase_time(10u64);
 
-    //     assert_eq!(1, 2);
-    //     // assert_eq!(
-    //     //     app.get_block_time_nanos(),
-    //     //     block_time_nanos + 10_000_000_000
-    //     // );
-    //     // assert_eq!(app.get_block_time_seconds(), block_time_seconds + 10);
-    // }
+        assert_eq!(
+            app.get_block_time_nanos(),
+            block_time_nanos + 10_000_000_000
+        );
+        assert_eq!(app.get_block_time_seconds(), block_time_seconds + 10);
+    }
 
-    // #[test]
-    // fn test_get_block_height() {
-    //     let app = NeutronTestApp::default();
+    #[test]
+    fn test_get_block_height() {
+        let app = NeutronTestApp::default();
 
-    //     assert_eq!(app.get_block_height(), 1i64);
+        assert_eq!(app.get_block_height(), 1i64);
 
-    //     app.increase_time(10u64);
+        app.increase_time(10u64);
 
-    //     assert_eq!(app.get_block_height(), 2i64);
-    // }
+        assert_eq!(app.get_block_height(), 2i64);
+    }
 
-    // #[test]
-    // fn test_execute() {
-    //     let app = NeutronTestApp::default();
+    #[test]
+    fn test_execute() {
+        let app = NeutronTestApp::default();
 
-    //     let acc = app
-    //         .init_account(&coins(100_000_000_000_000_000_000u128, "inj")) // 100 inj
-    //         .unwrap();
-    //     let addr = acc.address();
+        assert_eq!(app.get_block_height(), 1i64);
 
-    //     let msg = MsgCreateDenom {
-    //         sender: acc.address(),
-    //         subdenom: "newdenom".to_string(),
-    //     };
+        let acc = app
+            .init_account(&coins(100_000_000_000_000_000_000u128, "untrn")) // 100 inj
+            .unwrap();
+        let addr = acc.address();
 
-    //     let res: ExecuteResponse<MsgCreateDenomResponse> = app
-    //         .execute(msg, "/osmosis.tokenfactory.v1beta1.MsgCreateDenom", &acc)
-    //         .unwrap();
+        let msg = MsgCreateDenom {
+            sender: acc.address(),
+            subdenom: "newdenom".to_string(),
+        };
 
-    //     let create_denom_attrs = &res.data.new_token_denom;
-    //     assert_eq!(
-    //         create_denom_attrs,
-    //         &format!("factory/{}/{}", &addr, "newdenom")
-    //     );
+        let res: ExecuteResponse<MsgCreateDenomResponse> = app
+            .execute(msg, "/osmosis.tokenfactory.v1beta1.MsgCreateDenom", &acc)
+            .unwrap();
 
-    //     // execute on more time to excercise account sequence
-    //     let msg = MsgCreateDenom {
-    //         sender: acc.address(),
-    //         subdenom: "newerdenom".to_string(),
-    //     };
+        let create_denom_attrs = &res.data.new_token_denom;
+        assert_eq!(
+            create_denom_attrs,
+            &format!("factory/{}/{}", &addr, "newdenom")
+        );
 
-    //     let res: ExecuteResponse<MsgCreateDenomResponse> = app
-    //         .execute(msg, "/osmosis.tokenfactory.v1beta1.MsgCreateDenom", &acc)
-    //         .unwrap();
+        // execute on more time to excercise account sequence
+        let msg = MsgCreateDenom {
+            sender: acc.address(),
+            subdenom: "newerdenom".to_string(),
+        };
 
-    //     let create_denom_attrs = &res.data.new_token_denom;
-    //     assert_eq!(
-    //         create_denom_attrs,
-    //         &format!("factory/{}/{}", &addr, "newerdenom")
-    //     );
+        let res: ExecuteResponse<MsgCreateDenomResponse> = app
+            .execute(msg, "/osmosis.tokenfactory.v1beta1.MsgCreateDenom", &acc)
+            .unwrap();
 
-    //     // execute on more time to excercise account sequence
-    //     let msg = MsgCreateDenom {
-    //         sender: acc.address(),
-    //         subdenom: "multidenom_1".to_string(),
-    //     };
+        let create_denom_attrs = &res.data.new_token_denom;
+        assert_eq!(
+            create_denom_attrs,
+            &format!("factory/{}/{}", &addr, "newerdenom")
+        );
 
-    //     let msg_2 = MsgCreateDenom {
-    //         sender: acc.address(),
-    //         subdenom: "multidenom_2".to_string(),
-    //     };
+        // execute on more time to excercise account sequence
+        let msg = MsgCreateDenom {
+            sender: acc.address(),
+            subdenom: "multidenom_1".to_string(),
+        };
 
-    //     assert_eq!(app.get_block_height(), 4i64);
+        let msg_2 = MsgCreateDenom {
+            sender: acc.address(),
+            subdenom: "multidenom_2".to_string(),
+        };
 
-    //     let _res: ExecuteResponse<MsgCreateDenomResponse> = app
-    //         .execute_multiple(
-    //             &[
-    //                 (msg, "/osmosis.tokenfactory.v1beta1.MsgCreateDenom"),
-    //                 (msg_2, "/osmosis.tokenfactory.v1beta1.MsgCreateDenom"),
-    //             ],
-    //             &acc,
-    //         )
-    //         .unwrap();
+        assert_eq!(app.get_block_height(), 4i64);
 
-    //     assert_eq!(app.get_block_height(), 5i64);
+        let _res: ExecuteResponse<MsgCreateDenomResponse> = app
+            .execute_multiple(
+                &[
+                    (msg, "/osmosis.tokenfactory.v1beta1.MsgCreateDenom"),
+                    (msg_2, "/osmosis.tokenfactory.v1beta1.MsgCreateDenom"),
+                ],
+                &acc,
+            )
+            .unwrap();
 
-    //     let acc_2 = app
-    //         .init_account(&coins(100_000_000_000_000_000_000u128, "inj")) // 100 inj
-    //         .unwrap();
-    //     assert_eq!(app.get_block_height(), 6i64);
+        assert_eq!(app.get_block_height(), 5i64);
 
-    //     // execute on more time to excercise account sequence
-    //     let msg = MsgCreateDenom {
-    //         sender: acc.address(),
-    //         subdenom: "multidenom_3".to_string(),
-    //     };
+        // let acc_2 = app
+        //     .init_account(&coins(100_000_000_000_000_000_000u128, "inj")) // 100 inj
+        //     .unwrap();
+        // assert_eq!(app.get_block_height(), 6i64);
 
-    //     let msg_2 = MsgCreateDenom {
-    //         sender: acc.address(),
-    //         subdenom: "multidenom_4".to_string(),
-    //     };
+        // // execute on more time to excercise account sequence
+        // let msg = MsgCreateDenom {
+        //     sender: acc.address(),
+        //     subdenom: "multidenom_3".to_string(),
+        // };
 
-    //     let msg_3 = MsgCreateDenom {
-    //         sender: acc_2.address(),
-    //         subdenom: "multidenom_5".to_string(),
-    //     };
+        // let msg_2 = MsgCreateDenom {
+        //     sender: acc.address(),
+        //     subdenom: "multidenom_4".to_string(),
+        // };
 
-    //     let res: Vec<ExecuteResponse<MsgCreateDenomResponse>> = app
-    //         .execute_single_block(&[
-    //             (msg, "/osmosis.tokenfactory.v1beta1.MsgCreateDenom", &acc),
-    //             (msg_2, "/osmosis.tokenfactory.v1beta1.MsgCreateDenom", &acc),
-    //             (
-    //                 msg_3,
-    //                 "/osmosis.tokenfactory.v1beta1.MsgCreateDenom",
-    //                 &acc_2,
-    //             ),
-    //         ])
-    //         .unwrap();
+        // let msg_3 = MsgCreateDenom {
+        //     sender: acc_2.address(),
+        //     subdenom: "multidenom_5".to_string(),
+        // };
 
-    //     assert_eq!(res.len(), 3);
+        // let res: Vec<ExecuteResponse<MsgCreateDenomResponse>> = app
+        //     .execute_single_block(&[
+        //         (msg, "/osmosis.tokenfactory.v1beta1.MsgCreateDenom", &acc),
+        //         (msg_2, "/osmosis.tokenfactory.v1beta1.MsgCreateDenom", &acc),
+        //         (
+        //             msg_3,
+        //             "/osmosis.tokenfactory.v1beta1.MsgCreateDenom",
+        //             &acc_2,
+        //         ),
+        //     ])
+        //     .unwrap();
 
-    //     assert_eq!(app.get_block_height(), 7i64);
+        // assert_eq!(res.len(), 3);
 
-    //     let tokenfactory = TokenFactory::new(&app);
+        // assert_eq!(app.get_block_height(), 7i64);
 
-    //     // Ensure denoms are created by acc
-    //     let denoms = tokenfactory
-    //         .query_denoms_from_creator(&QueryDenomsFromCreatorRequest {
-    //             creator: acc.address(),
-    //         })
-    //         .unwrap()
-    //         .denoms;
+        // let tokenfactory = TokenFactory::new(&app);
 
-    //     assert_eq!(denoms.len(), 6);
+        // // Ensure denoms are created by acc
+        // let denoms = tokenfactory
+        //     .query_denoms_from_creator(&QueryDenomsFromCreatorRequest {
+        //         creator: acc.address(),
+        //     })
+        //     .unwrap()
+        //     .denoms;
 
-    //     // Ensure denoms are created by acc_2
-    //     let denoms = tokenfactory
-    //         .query_denoms_from_creator(&QueryDenomsFromCreatorRequest {
-    //             creator: acc_2.address(),
-    //         })
-    //         .unwrap()
-    //         .denoms;
+        // assert_eq!(denoms.len(), 6);
 
-    //     assert_eq!(denoms.len(), 1);
-    // }
+        // // Ensure denoms are created by acc_2
+        // let denoms = tokenfactory
+        //     .query_denoms_from_creator(&QueryDenomsFromCreatorRequest {
+        //         creator: acc_2.address(),
+        //     })
+        //     .unwrap()
+        //     .denoms;
+
+        // assert_eq!(denoms.len(), 1);
+    }
 
     // #[test]
     // fn test_query() {

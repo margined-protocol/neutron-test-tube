@@ -15,7 +15,6 @@ import (
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	banktestutil "github.com/cosmos/cosmos-sdk/x/bank/testutil"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	"github.com/cosmos/gogoproto/proto"
 	"github.com/margined-protocol/test-tube/neutron-test-tube/result"
@@ -33,21 +32,25 @@ var (
 
 //export InitTestEnv
 func InitTestEnv() uint64 {
-	fmt.Println("InitTestEnv")
+	fmt.Println("InitTestEnv2")
 	// Temp fix for concurrency issue
 	mu.Lock()
 	defer mu.Unlock()
 
 	// temp: suppress noise from stdout
-	os.Stdout = nil
+	// os.Stdout = nil
 
 	envCounter += 1
 	id := envCounter
+
+	fmt.Println("here")
 
 	nodeHome, err := os.MkdirTemp("", ".neutron-test-tube-temp-")
 	if err != nil {
 		panic(err)
 	}
+
+	fmt.Println("there")
 
 	// set up the validator
 	env := new(testenv.TestEnv)
@@ -65,22 +68,18 @@ func InitTestEnv() uint64 {
 	// Allow testing unoptimized contract
 	wasmtypes.MaxWasmSize = 1024 * 1024 * 1024 * 1024 * 1024
 
-	// validators := env.App.StakingKeeper.GetAllValidators(env.Ctx)
-	// valAddrFancy, _ := validators[0].GetConsAddr()
-	// env.App.SlashingKeeper.SetValidatorSigningInfo(env.Ctx, valAddrFancy, slashingtypes.NewValidatorSigningInfo(
-	// 	valAddrFancy,
-	// 	0,
-	// 	0,
-	// 	time.Unix(0, 0),
-	// 	false,
-	// 	0,
-	// ))
-
-	// env.BeginNewBlock(false, 5)
-
 	newBlockTime := env.Ctx.BlockTime().Add(time.Duration(3) * time.Second)
+	newCtx := env.Ctx.WithBlockTime(newBlockTime).WithBlockHeight(env.Ctx.BlockHeight() + 1)
+	env.Ctx = newCtx
 
-	reqFinalizeBlock := abci.RequestFinalizeBlock{Height: env.Ctx.BlockHeight(), Time: newBlockTime}
+	reqFinalizeBlock := abci.RequestFinalizeBlock{Height: env.Ctx.BlockHeight(), Txs: [][]byte{}, Time: newBlockTime}
+
+	// env.Ctx = env.App.NewContext(false)
+
+	fmt.Println("reqFinalizeBlock")
+	fmt.Printf("block %d\n", env.Ctx.BlockHeight())
+	fmt.Printf("block %s\n", reqFinalizeBlock.String())
+
 	env.App.FinalizeBlock(&reqFinalizeBlock)
 	env.App.Commit()
 
@@ -110,6 +109,7 @@ func InitAccount(envId uint64, coinsJson string) *C.char {
 
 	priv := secp256k1.GenPrivKey()
 	accAddr := sdk.AccAddress(priv.PubKey().Address())
+	fmt.Println("InitAccount", accAddr.String())
 
 	for _, coin := range coins {
 		// create denom if not exist
@@ -128,7 +128,7 @@ func InitAccount(envId uint64, coinsJson string) *C.char {
 
 	}
 
-	err := banktestutil.FundAccount(env.Ctx, env.App.BankKeeper, accAddr, coins)
+	err := env.FundAccount(env.Ctx, env.App.BankKeeper, accAddr, coins)
 	if err != nil {
 		panic(errors.Wrapf(err, "Failed to fund account"))
 	}
@@ -143,26 +143,63 @@ func InitAccount(envId uint64, coinsJson string) *C.char {
 //export IncreaseTime
 func IncreaseTime(envId uint64, seconds uint64) {
 	fmt.Println("IncreaseTime")
-	// FinalizeBlock(envId, "", seconds)
+	internalFinalizeBlock(envId, "", seconds)
 }
 
 //export FinalizeBlock
-func FinalizeBlock(envId uint64, base64ReqDeliverTx string, seconds uint64) {
+func FinalizeBlock(envId uint64, base64ReqDeliverTx string) *C.char {
+	fmt.Println("FinalizeBlock")
+	return internalFinalizeBlock(envId, base64ReqDeliverTx, 3)
+
+}
+
+func internalFinalizeBlock(envId uint64, base64ReqDeliverTx string, seconds uint64) *C.char {
 	env := loadEnv(envId)
 	// Temp fix for concurrency issue
 	mu.Lock()
 	defer mu.Unlock()
+
+	fmt.Printf("base64ReqDeliverTx %s\n", base64ReqDeliverTx)
 
 	reqDeliverTxBytes, err := base64.StdEncoding.DecodeString(base64ReqDeliverTx)
 	if err != nil {
 		panic(err)
 	}
 
-	reqFinalizeBlock := &abci.RequestFinalizeBlock{Height: env.Ctx.BlockHeight(), Txs: [][]byte{reqDeliverTxBytes}, Time: env.Ctx.BlockTime().Add(time.Duration(seconds) * time.Second)}
+	fmt.Printf("tx bytes encoded %s\n", reqDeliverTxBytes)
 
-	env.App.FinalizeBlock(reqFinalizeBlock)
-	env.App.Commit()
+	newBlockTime := env.Ctx.BlockTime().Add(time.Duration(seconds) * time.Second)
+	newCtx := env.Ctx.WithBlockTime(newBlockTime).WithBlockHeight(env.Ctx.BlockHeight() + 1)
+	env.Ctx = newCtx
+
+	reqFinalizeBlock := &abci.RequestFinalizeBlock{Height: env.Ctx.BlockHeight(), Txs: [][]byte{reqDeliverTxBytes}, Time: newBlockTime}
+
+	fmt.Printf("block %d\n", env.Ctx.BlockHeight())
+
+	fmt.Println("finalizing block")
+	res, err := env.App.FinalizeBlock(reqFinalizeBlock)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Printf("result------> %s\n", res)
+
+	fmt.Println("commit")
+	_, err = env.App.Commit()
+	if err != nil {
+		panic(err)
+	}
+
+	bz, err := proto.Marshal(res)
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Printf("block>>>>>>>. %s\n", bz)
+
 	envRegister.Store(envId, env)
+
+	return encodeBytesResultBytes(bz)
+
 }
 
 //export WasmSudo
@@ -189,43 +226,51 @@ func WasmSudo(envId uint64, bech32Address, msgJson string) *C.char {
 	return encodeBytesResultBytes(res)
 }
 
-//export Execute
-func Execute(envId uint64, base64ReqDeliverTx string) *C.char {
-	env := loadEnv(envId)
-	// Temp fix for concurrency issue
-	mu.Lock()
-	defer mu.Unlock()
+// //export Execute
+// func Execute(envId uint64, base64ReqDeliverTx string) *C.char {
+// 	env := loadEnv(envId)
+// 	// Temp fix for concurrency issue
+// 	mu.Lock()
+// 	defer mu.Unlock()
 
-	reqDeliverTxBytes, err := base64.StdEncoding.DecodeString(base64ReqDeliverTx)
-	if err != nil {
-		panic(err)
-	}
+// 	reqDeliverTxBytes, err := base64.StdEncoding.DecodeString(base64ReqDeliverTx)
+// 	if err != nil {
+// 		panic(err)
+// 	}
 
-	newBlockTime := env.Ctx.BlockTime().Add(time.Duration(3) * time.Second)
+// 	newBlockTime := env.Ctx.BlockTime().Add(time.Duration(3) * time.Second)
 
-	reqDeliverTx := abci.RequestFinalizeBlock{
-		Txs:    [][]byte{reqDeliverTxBytes},
-		Height: env.Ctx.BlockHeight(), Time: newBlockTime,
-	}
-	err = proto.Unmarshal(reqDeliverTxBytes, &reqDeliverTx)
-	if err != nil {
-		return encodeErrToResultBytes(result.ExecuteError, err)
-	}
+// 	reqDeliverTx := abci.RequestFinalizeBlock{
+// 		Txs:    [][]byte{reqDeliverTxBytes},
+// 		Height: env.Ctx.BlockHeight(), Time: newBlockTime,
+// 	}
+// 	err = proto.Unmarshal(reqDeliverTxBytes, &reqDeliverTx)
+// 	if err != nil {
+// 		return encodeErrToResultBytes(result.ExecuteError, err)
+// 	}
 
-	resDeliverTx, err := env.App.FinalizeBlock(&reqDeliverTx)
-	if err != nil {
-		panic(err)
-	}
+// 	resDeliverTx, err := env.App.FinalizeBlock(&reqDeliverTx)
+// 	if err != nil {
+// 		panic(err)
+// 	}
 
-	bz, err := proto.Marshal(resDeliverTx)
-	if err != nil {
-		panic(err)
-	}
+// 	// fmt.Printf("block %s\n", res)
 
-	envRegister.Store(envId, env)
+// 	fmt.Println("commit")
+// 	_, err = env.App.Commit()
+// 	if err != nil {
+// 		panic(err)
+// 	}
 
-	return encodeBytesResultBytes(bz)
-}
+// 	bz, err := proto.Marshal(resDeliverTx)
+// 	if err != nil {
+// 		panic(err)
+// 	}
+
+// 	envRegister.Store(envId, env)
+
+// 	return encodeBytesResultBytes(bz)
+// }
 
 //export Query
 func Query(envId uint64, path, base64QueryMsgBytes string) *C.char {
@@ -299,6 +344,8 @@ func AccountNumber(envId uint64, bech32Address string) uint64 {
 
 //export Simulate
 func Simulate(envId uint64, base64TxBytes string) *C.char { // => base64GasInfo
+	fmt.Println("Simulate")
+
 	env := loadEnv(envId)
 	// Temp fix for concurrency issue
 	mu.Lock()

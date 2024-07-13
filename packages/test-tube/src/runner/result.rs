@@ -2,7 +2,7 @@ use crate::runner::error::{DecodeError, RunnerError};
 use base64::engine::general_purpose::STANDARD as BASE64_STANDARD;
 use base64::Engine;
 use cosmrs::proto::cosmos::base::abci::v1beta1::{GasInfo, TxMsgData};
-use cosmrs::proto::tendermint::v0_37::abci::ResponseDeliverTx;
+use cosmrs::proto::tendermint::v0_38::abci::ResponseFinalizeBlock;
 use cosmrs::rpc::endpoint::broadcast::tx_commit::Response as TxCommitResponse;
 use cosmrs::tendermint::abci::types::ExecTxResult;
 use cosmwasm_std::{Attribute, Event};
@@ -21,6 +21,8 @@ where
     pub data: R,
     pub raw_data: Vec<u8>,
     pub events: Vec<Event>,
+    // so this will just return the last one
+    // I think currently
     pub gas_info: GasInfo,
 }
 
@@ -123,50 +125,56 @@ where
     }
 }
 
-impl<R> TryFrom<ResponseDeliverTx> for ExecuteResponse<R>
+impl<R> TryFrom<ResponseFinalizeBlock> for ExecuteResponse<R>
 where
     R: prost::Message + Default,
 {
     type Error = RunnerError;
 
-    fn try_from(res: ResponseDeliverTx) -> Result<Self, Self::Error> {
-        let tx_msg_data =
-            TxMsgData::decode(res.data.as_ref()).map_err(DecodeError::ProtoDecodeError)?;
+    fn try_from(res: ResponseFinalizeBlock) -> Result<Self, Self::Error> {
+        // let events = res
+        //     .tx_results
+        //     .into_iter()
+        //     .map(|tx| tx.events)
+        //     .collect::<Vec<_>>();
 
-        let msg_data = tx_msg_data
-            .msg_responses
-            // since this tx contains exactly 1 msg
-            // when getting none of them, that means error
-            .get(0)
-            .ok_or(RunnerError::ExecuteError { msg: res.log })?;
+        // let tx_msg_data =
+        //     TxMsgData::decode(res.data.as_ref()).map_err(DecodeError::ProtoDecodeError)?;
 
-        let data = R::decode(msg_data.value.as_slice()).map_err(DecodeError::ProtoDecodeError)?;
+        // let msg_data = tx_msg_data
+        //     .msg_responses
+        //     // since this tx contains exactly 1 msg
+        //     // when getting none of them, that means error
+        //     .get(0)
+        //     .ok_or(RunnerError::ExecuteError { msg: res.log })?;
 
-        let events = res
-            .events
-            .into_iter()
-            .map(|e| -> Result<Event, DecodeError> {
-                Ok(Event::new(e.r#type).add_attributes(
-                    e.attributes
-                        .into_iter()
-                        .map(|a| -> Result<Attribute, Utf8Error> {
-                            Ok(Attribute {
-                                key: a.key.to_string(),
-                                value: a.value.to_string(),
-                            })
-                        })
-                        .collect::<Result<Vec<Attribute>, Utf8Error>>()?,
-                ))
-            })
-            .collect::<Result<Vec<Event>, DecodeError>>()?;
+        // let data = R::decode(msg_data.value.as_slice()).map_err(DecodeError::ProtoDecodeError)?;
+
+        // let events = res
+        //     .events
+        //     .into_iter()
+        //     .map(|e| -> Result<Event, DecodeError> {
+        //         Ok(Event::new(e.r#type).add_attributes(
+        //             e.attributes
+        //                 .into_iter()
+        //                 .map(|a| -> Result<Attribute, Utf8Error> {
+        //                     Ok(Attribute {
+        //                         key: a.key.to_string(),
+        //                         value: a.value.to_string(),
+        //                     })
+        //                 })
+        //                 .collect::<Result<Vec<Attribute>, Utf8Error>>()?,
+        //         ))
+        //     })
+        //     .collect::<Result<Vec<Event>, DecodeError>>()?;
 
         Ok(Self {
-            data,
-            raw_data: res.data.to_vec(),
-            events,
+            data: Default::default(),
+            raw_data: vec![],
+            events: vec![],
             gas_info: GasInfo {
-                gas_wanted: res.gas_wanted as u64,
-                gas_used: res.gas_used as u64,
+                gas_wanted: 0u64,
+                gas_used: 0u64,
             },
         })
     }

@@ -5,7 +5,7 @@ import (
 
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	paramstypes "github.com/cosmos/cosmos-sdk/x/params/types"
-	"github.com/cosmos/gogoproto/proto"
+	proto "github.com/cosmos/gogoproto/proto"
 )
 
 type ProtoParamSet interface {
@@ -28,6 +28,9 @@ func (r *ParamTypeRegistry) RegisterParamSet(p ProtoParamSet) {
 }
 func (r *ParamTypeRegistry) GetEmptyParamsSet(typeUrl string) (ProtoParamSet, bool) {
 	_pset, ok := r.m[typeUrl]
+	if !ok {
+		return nil, false
+	}
 	pset := proto.Clone(_pset)
 	pset.Reset()
 	return pset.(ProtoParamSet), ok

@@ -26,10 +26,12 @@ import (
 	"github.com/cosmos/cosmos-sdk/server"
 
 	simtestutil "github.com/cosmos/cosmos-sdk/testutil/sims"
+
+	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
+
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
-
 	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 
@@ -40,6 +42,7 @@ import (
 
 	// neutron
 	"github.com/neutron-org/neutron/v4/app"
+	dexmoduletypes "github.com/neutron-org/neutron/v4/x/dex/types"
 	tokenfactorytypes "github.com/neutron-org/neutron/v4/x/tokenfactory/types"
 )
 
@@ -86,9 +89,10 @@ func NewNeutronApp(nodeHome string) *app.App {
 
 func InitChain(appInstance *app.App) (sdk.Context, secp256k1.PrivKey) {
 	sdk.DefaultBondDenom = "untrn"
-	genesisState, valPriv := GenesisStateWithValSet(appInstance)
+	// genesisState, valPriv := GenesisStateWithValSet(appInstance)
+	_, valPriv := GenesisStateWithValSet(appInstance)
 
-	// genesisState := app.NewDefaultGenesisState(app.AppCodec())
+	genesisState := app.NewDefaultGenesisState(appInstance.AppCodec())
 
 	encCfg := app.MakeEncodingConfig()
 
@@ -128,7 +132,7 @@ func InitChain(appInstance *app.App) (sdk.Context, secp256k1.PrivKey) {
 		},
 	)
 
-	ctx := appInstance.NewContext(false)
+	ctx := appInstance.NewUncachedContext(false, tmproto.Header{Height: 0, ChainID: "neutron-666", Time: time.Now().UTC()})
 
 	// for each stakingGenesisState.Validators
 	for _, validator := range stakingGenesisState.Validators {
@@ -237,105 +241,6 @@ func GenesisStateWithValSet(appInstance *app.App) (app.GenesisState, secp256k1.P
 	return genesisState, secp256k1.PrivKey{Key: privVal.PrivKey.Bytes()}
 }
 
-// func SetupNeutronApp() (*app.App, []byte) {
-// 	db := dbm.NewMemDB()
-
-// 	encCfg := app.MakeEncodingConfig()
-// 	var emptyWasmOpts []wasmkeeper.Option
-
-// 	appInstance := app.New(
-// 		log.NewNopLogger(),
-// 		db,
-// 		nil,
-// 		true,
-// 		map[int64]bool{},
-// 		app.DefaultNodeHome,
-// 		0,
-// 		encCfg,
-// 		DebugAppOptions{},
-// 		emptyWasmOpts,
-// 		baseapp.SetChainID("neutron-666"),
-// 	)
-
-// 	// validator keys
-// 	validatorKey := secp256k1.GenPrivKey()
-// 	pval := mock.PV{PrivKey: validatorKey}
-// 	conval := mock.PV{PrivKey: ed25519.GenPrivKey()}
-// 	pubKey, err := pval.GetPubKey()
-// 	requireNoErr(err)
-
-// 	// create validator set with single validator
-// 	validator := tmtypes.NewValidator(pubKey, 1)
-// 	conPubKey, err := conval.GetPubKey()
-// 	validator.PubKey = conPubKey
-
-// 	valSet := tmtypes.NewValidatorSet([]*tmtypes.Validator{validator})
-
-// 	// generate genesis account
-// 	senderPrivKey := ed25519.GenPrivKey()
-// 	acc := authtypes.NewBaseAccount(senderPrivKey.PubKey().Address().Bytes(), senderPrivKey.PubKey(), 0, 0)
-// 	balance := banktypes.Balance{
-// 		Address: acc.GetAddress().String(),
-// 		Coins:   sdk.NewCoins(sdk.NewCoin(sdk.DefaultBondDenom, sdkmath.NewInt(100000000000000))),
-// 	}
-
-// 	genesisState := app.NewDefaultGenesisState()
-// 	genesisState, err = simtestutil.GenesisStateWithValSet(appInstance.AppCodec(), genesisState, valSet, []authtypes.GenesisAccount{acc}, balance)
-// 	requireNoErr(err)
-
-// 	// Set up Wasm genesis state
-// 	wasmGen := wasm.GenesisState{
-// 		Params: wasmtypes.Params{
-// 			// Allow store code without gov
-// 			CodeUploadAccess:             wasmtypes.AllowEverybody,
-// 			InstantiateDefaultPermission: wasmtypes.AccessTypeEverybody,
-// 		},
-// 	}
-// 	genesisState[wasm.ModuleName] = encCfg.Marshaler.MustMarshalJSON(&wasmGen)
-
-// 	// Set up governance genesis state
-// 	govParams := govv1types.DefaultParams()
-// 	votingPeriod := time.Second * 10 // 10 second
-// 	govParams.VotingPeriod = &votingPeriod
-// 	govGen := govv1types.GenesisState{
-// 		StartingProposalId: govv1types.DefaultStartingProposalID,
-// 		Deposits:           govv1types.Deposits{},
-// 		Votes:              govv1types.Votes{},
-// 		Proposals:          govv1types.Proposals{},
-// 		Params:             &govParams,
-// 	}
-
-// 	genesisState[govtypes.ModuleName] = encCfg.Marshaler.MustMarshalJSON(&govGen)
-
-// 	// Set up exchange genesis state
-// 	exchangeParams := exchangetypes.DefaultParams()
-// 	exchangeParams.IsInstantDerivativeMarketLaunchEnabled = true
-// 	exchangeGen := exchangetypes.GenesisState{
-// 		Params: exchangeParams,
-// 	}
-// 	genesisState[exchangetypes.ModuleName] = encCfg.Marshaler.MustMarshalJSON(&exchangeGen)
-
-// 	stateBytes, err := json.MarshalIndent(genesisState, "", " ")
-
-// 	requireNoErr(err)
-
-// 	consensusParams := app.DefaultConsensusParams
-
-// 	// replace sdk.DefaultDenom with "inj", a bit of a hack, needs improvement
-// 	stateBytes = []byte(strings.Replace(string(stateBytes), "\"stake\"", "\"inj\"", -1))
-
-// 	appInstance.InitChain(
-// 		abci.RequestInitChain{
-// 			ChainId:         "neutron-666",
-// 			Validators:      []abci.ValidatorUpdate{},
-// 			ConsensusParams: consensusParams,
-// 			AppStateBytes:   stateBytes,
-// 		},
-// 	)
-
-// 	return appInstance, validatorKey.Bytes()
-// }
-
 func (env *TestEnv) BeginNewBlock(executeNextEpoch bool, timeIncreaseSeconds uint64) {
 	newBlockTime := env.Ctx.BlockTime().Add(time.Duration(timeIncreaseSeconds) * time.Second)
 
@@ -420,10 +325,18 @@ func (env *TestEnv) SetDefaultValidator(consAddr sdk.ConsAddress) {
 // 	return valAddr
 // }
 
+func (env *TestEnv) FundAccount(ctx sdk.Context, bankKeeper bankkeeper.Keeper, addr sdk.AccAddress, amounts sdk.Coins) error {
+	if err := bankKeeper.MintCoins(ctx, dexmoduletypes.ModuleName, amounts); err != nil {
+		return err
+	}
+
+	return bankKeeper.SendCoinsFromModuleToAccount(ctx, dexmoduletypes.ModuleName, addr, amounts)
+}
+
 func (env *TestEnv) SetupParamTypes() {
 	pReg := env.ParamTypesRegistry
-
 	pReg.RegisterParamSet(&tokenfactorytypes.Params{})
+
 }
 
 func requireNoErr(err error) {
