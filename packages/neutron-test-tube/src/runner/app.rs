@@ -252,8 +252,6 @@ mod tests {
             .execute(msg, "/osmosis.tokenfactory.v1beta1.MsgCreateDenom", &acc)
             .unwrap();
 
-        println!("{:?}", res);
-
         let create_denom_attrs = &res.data.new_token_denom;
         assert_eq!(
             create_denom_attrs,
