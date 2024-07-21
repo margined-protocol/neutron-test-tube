@@ -256,7 +256,7 @@ use neutron_std::types::{
 };
 use prost::Message;
 
-use crate::{Account, Bank, Dex, NeutronTestApp};
+use neutron_test_tube::{Account, Bank, Dex, NeutronTestApp};
 use test_tube_ntrn::Module;
 
 let app = NeutronTestApp::new();
