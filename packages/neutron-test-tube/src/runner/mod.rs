@@ -39,7 +39,7 @@ mod tests {
     fn test_query_error_no_route() {
         let app = NeutronTestApp::default();
         let res = app.query::<AdhocRandomQueryRequest, AdhocRandomQueryResponse>(
-            "/injective.random.v1beta1.Query/AdhocRandom",
+            "/neutron.random.v1beta1.Query/AdhocRandom",
             &AdhocRandomQueryRequest { id: 1 },
         );
 
@@ -47,7 +47,7 @@ mod tests {
         assert_eq!(
             err,
             QueryError {
-                msg: "No route found for `/injective.random.v1beta1.Query/AdhocRandom`".to_string()
+                msg: "No route found for `/neutron.random.v1beta1.Query/AdhocRandom`".to_string()
             }
         );
     }
