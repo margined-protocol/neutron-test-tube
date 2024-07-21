@@ -1,4 +1,4 @@
-use neutron_std::types::cosmos::authz::v1beta1::{
+use margined_neutron_std::types::cosmos::authz::v1beta1::{
     MsgExec, MsgExecResponse, MsgGrant, MsgGrantResponse, QueryGranteeGrantsRequest,
     QueryGranteeGrantsResponse, QueryGranterGrantsRequest, QueryGranterGrantsResponse,
     QueryGrantsRequest, QueryGrantsResponse,
@@ -46,8 +46,8 @@ where
 #[cfg(test)]
 mod tests {
     use cosmwasm_std::Coin;
-    use neutron_std::shim::Any;
-    use neutron_std::types::{
+    use margined_neutron_std::shim::Any;
+    use margined_neutron_std::types::{
         cosmos::authz::v1beta1::{
             GenericAuthorization, Grant, GrantAuthorization, MsgExec, MsgGrant,
             QueryGranteeGrantsRequest, QueryGranterGrantsRequest,

@@ -3,23 +3,23 @@ use std::ffi::CString;
 use base64::engine::general_purpose::STANDARD as BASE64_STANDARD;
 use base64::Engine as _;
 use cosmrs::crypto::secp256k1::SigningKey;
-use cosmrs::proto::tendermint::v0_38::abci::{RequestFinalizeBlock, ResponseFinalizeBlock};
+use cosmrs::proto::tendermint::v0_38::abci::ResponseFinalizeBlock;
+use cosmrs::tx;
 use cosmrs::tx::{Fee, SignerInfo};
-use cosmrs::{tx, Any};
 use cosmwasm_std::Coin;
 use prost::Message;
 
 use crate::account::{Account, FeeSetting, SigningAccount};
 use crate::bindings::{
-    AccountNumber, AccountSequence, EnableIncreasingBlockTimeInEndBlocker, Execute, FinalizeBlock,
-    GetBlockHeight, GetBlockTime, GetParamSet, GetValidatorAddress, GetValidatorPrivateKey,
-    IncreaseTime, InitAccount, InitTestEnv, Query, SetParamSet, Simulate,
+    AccountNumber, AccountSequence, FinalizeBlock, GetBlockHeight, GetBlockTime, GetParamSet,
+    GetValidatorAddress, GetValidatorPrivateKey, IncreaseTime, InitAccount, InitTestEnv, Query,
+    Simulate,
 };
+use crate::redefine_as_go_string;
 use crate::runner::error::{DecodeError, EncodeError, RunnerError};
 use crate::runner::result::RawResult;
 use crate::runner::result::{RunnerExecuteResult, RunnerResult};
 use crate::runner::Runner;
-use crate::{redefine_as_go_string, ExecuteResponse};
 
 pub const NEUTRON_MIN_GAS_PRICE: u128 = 2_500;
 
@@ -273,39 +273,6 @@ impl BaseApp {
 
         res
     }
-
-    /// Ensure that all execution that happens in `execution` happens in a block
-    /// and end block properly, no matter it suceeds or fails.
-    // unsafe fn run_block<T, E>(&self, execution: impl Fn() -> Result<T, E>) -> Result<T, E> {
-    //     match execution() {
-    //         ok @ Ok(_) => {
-    //             unsafe { FinalizeBlock(self.id) };
-    //             ok
-    //         }
-    //         err @ Err(_) => {
-    //             unsafe { FinalizeBlock(self.id) };
-    //             err
-    //         }
-    //     }
-    // }
-
-    /// Set parameter set for a given subspace.
-    // pub fn set_param_set(&self, subspace: &str, pset: impl Into<Any>) -> RunnerResult<()> {
-    //     unsafe {
-    //         BeginBlock(self.id);
-    //         let pset = Message::encode_to_vec(&pset.into());
-    //         let pset = BASE64_STANDARD.encode(pset);
-    //         redefine_as_go_string!(pset);
-    //         redefine_as_go_string!(subspace);
-    //         let res = SetParamSet(self.id, subspace, pset);
-
-    //         EndBlock(self.id);
-
-    //         // returns empty bytes if success
-    //         RawResult::from_non_null_ptr(res).into_result()?;
-    //         Ok(())
-    //     }
-    // }
 
     /// Get parameter set for a given subspace.
     pub fn get_param_set<P: Message + Default>(

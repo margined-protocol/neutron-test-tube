@@ -1,5 +1,3 @@
-use cosmrs::Any;
-
 use cosmwasm_std::Coin;
 
 use prost::Message;
@@ -151,7 +149,7 @@ impl<'a> Runner<'a> for NeutronTestApp {
 #[cfg(test)]
 mod tests {
     use cosmwasm_std::{coins, Coin};
-    use neutron_std::types::{
+    use margined_neutron_std::types::{
         cosmos::bank::v1beta1::QueryAllBalancesRequest,
         osmosis::tokenfactory::v1beta1::{
             MsgCreateDenom, MsgCreateDenomResponse, QueryDenomsFromCreatorRequest,
