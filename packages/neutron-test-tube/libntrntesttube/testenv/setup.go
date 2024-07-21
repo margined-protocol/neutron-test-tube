@@ -89,10 +89,7 @@ func NewNeutronApp(nodeHome string) *app.App {
 
 func InitChain(appInstance *app.App) (sdk.Context, secp256k1.PrivKey) {
 	sdk.DefaultBondDenom = "untrn"
-	// genesisState, valPriv := GenesisStateWithValSet(appInstance)
-	_, valPriv := GenesisStateWithValSet(appInstance)
-
-	genesisState := app.NewDefaultGenesisState(appInstance.AppCodec())
+	genesisState, valPriv := GenesisStateWithValSet(appInstance)
 
 	encCfg := app.MakeEncodingConfig()
 
@@ -277,53 +274,6 @@ func (env *TestEnv) SetDefaultValidator(consAddr sdk.ConsAddress) {
 	)
 	env.App.SlashingKeeper.SetValidatorSigningInfo(env.Ctx, consAddr, signingInfo)
 }
-
-// func (env *TestEnv) setupValidator(bondStatus stakingtypes.BondStatus) sdk.ValAddress {
-// 	valPk := ed25519.GenPrivKey()
-// 	valPub := valPk.PubKey()
-// 	valAddr := sdk.ValAddress(valPub.Address())
-
-// 	bondDenom := env.App.StakingKeeper.GetParams(env.Ctx).BondDenom
-// 	selfBond := sdk.NewCoins(sdk.Coin{Amount: sdk.NewInt(100), Denom: bondDenom})
-
-// 	err := testutil.FundAccount(env.App.BankKeeper, env.Ctx, sdk.AccAddress(valPub.Address()), selfBond)
-// 	requireNoErr(err)
-
-// 	stakingHandler := stakingkeeper.NewMsgServerImpl(env.App.StakingKeeper)
-// 	stakingCoin := sdk.NewCoin(bondDenom, selfBond[0].Amount)
-
-// 	Commission := stakingtypes.NewCommissionRates(sdk.MustNewDecFromStr("0.05"), sdk.MustNewDecFromStr("0.05"), sdk.MustNewDecFromStr("0.05"))
-// 	msg, err := stakingtypes.NewMsgCreateValidator(valAddr, valPub, stakingCoin, stakingtypes.Description{}, Commission, sdk.OneInt())
-// 	requireNoErr(err)
-
-// 	res, err := stakingHandler.CreateValidator(env.Ctx, msg)
-// 	requireNoErr(err)
-
-// 	requireNoNil("staking handler", res)
-
-// 	env.App.BankKeeper.SendCoinsFromModuleToModule(env.Ctx, stakingtypes.NotBondedPoolName, stakingtypes.BondedPoolName, sdk.NewCoins(stakingCoin))
-
-// 	val, found := env.App.StakingKeeper.GetValidator(env.Ctx, valAddr)
-// 	requireTrue("validator found", found)
-
-// 	val = val.UpdateStatus(bondStatus)
-// 	env.App.StakingKeeper.SetValidator(env.Ctx, val)
-
-// 	consAddr, err := val.GetConsAddr()
-// 	requireNoErr(err)
-
-// 	signingInfo := slashingtypes.NewValidatorSigningInfo(
-// 		consAddr,
-// 		env.Ctx.BlockHeight(),
-// 		0,
-// 		time.Unix(0, 0),
-// 		false,
-// 		0,
-// 	)
-// 	env.App.SlashingKeeper.SetValidatorSigningInfo(env.Ctx, consAddr, signingInfo)
-
-// 	return valAddr
-// }
 
 func (env *TestEnv) FundAccount(ctx sdk.Context, bankKeeper bankkeeper.Keeper, addr sdk.AccAddress, amounts sdk.Coins) error {
 	if err := bankKeeper.MintCoins(ctx, dexmoduletypes.ModuleName, amounts); err != nil {

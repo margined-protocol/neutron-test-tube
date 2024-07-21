@@ -31,9 +31,7 @@ var (
 )
 
 //export InitTestEnv
-func InitTestEnv() uint64 {
-	fmt.Println("InitTestEnv2")
-	// Temp fix for concurrency issue
+func InitTestEnv() uint64 { // Temp fix for concurrency issue
 	mu.Lock()
 	defer mu.Unlock()
 
@@ -43,14 +41,10 @@ func InitTestEnv() uint64 {
 	envCounter += 1
 	id := envCounter
 
-	fmt.Println("here")
-
 	nodeHome, err := os.MkdirTemp("", ".neutron-test-tube-temp-")
 	if err != nil {
 		panic(err)
 	}
-
-	fmt.Println("there")
 
 	// set up the validator
 	env := new(testenv.TestEnv)
@@ -75,10 +69,6 @@ func InitTestEnv() uint64 {
 	reqFinalizeBlock := abci.RequestFinalizeBlock{Height: env.Ctx.BlockHeight(), Txs: [][]byte{}, Time: newBlockTime}
 
 	// env.Ctx = env.App.NewContext(false)
-
-	fmt.Println("reqFinalizeBlock")
-	fmt.Printf("block %d\n", env.Ctx.BlockHeight())
-	fmt.Printf("block %s\n", reqFinalizeBlock.String())
 
 	env.App.FinalizeBlock(&reqFinalizeBlock)
 	env.App.Commit()
@@ -109,8 +99,6 @@ func InitAccount(envId uint64, coinsJson string) *C.char {
 
 	priv := secp256k1.GenPrivKey()
 	accAddr := sdk.AccAddress(priv.PubKey().Address())
-	fmt.Println("InitAccount", accAddr.String())
-
 	for _, coin := range coins {
 		// create denom if not exist
 		_, hasDenomMetaData := env.App.BankKeeper.GetDenomMetaData(env.Ctx, coin.Denom)
@@ -142,13 +130,11 @@ func InitAccount(envId uint64, coinsJson string) *C.char {
 
 //export IncreaseTime
 func IncreaseTime(envId uint64, seconds uint64) {
-	fmt.Println("IncreaseTime")
 	internalFinalizeBlock(envId, "", seconds)
 }
 
 //export FinalizeBlock
 func FinalizeBlock(envId uint64, base64ReqDeliverTx string) *C.char {
-	fmt.Println("FinalizeBlock")
 	return internalFinalizeBlock(envId, base64ReqDeliverTx, 3)
 
 }
@@ -159,14 +145,10 @@ func internalFinalizeBlock(envId uint64, base64ReqDeliverTx string, seconds uint
 	mu.Lock()
 	defer mu.Unlock()
 
-	fmt.Printf("base64ReqDeliverTx %s\n", base64ReqDeliverTx)
-
 	reqDeliverTxBytes, err := base64.StdEncoding.DecodeString(base64ReqDeliverTx)
 	if err != nil {
 		panic(err)
 	}
-
-	fmt.Printf("tx bytes encoded %s\n", reqDeliverTxBytes)
 
 	newBlockTime := env.Ctx.BlockTime().Add(time.Duration(seconds) * time.Second)
 	newCtx := env.Ctx.WithBlockTime(newBlockTime).WithBlockHeight(env.Ctx.BlockHeight() + 1)
@@ -174,16 +156,10 @@ func internalFinalizeBlock(envId uint64, base64ReqDeliverTx string, seconds uint
 
 	reqFinalizeBlock := &abci.RequestFinalizeBlock{Height: env.Ctx.BlockHeight(), Txs: [][]byte{reqDeliverTxBytes}, Time: newBlockTime}
 
-	fmt.Printf("block %d\n", env.Ctx.BlockHeight())
-
-	fmt.Println("finalizing block")
 	res, err := env.App.FinalizeBlock(reqFinalizeBlock)
 	if err != nil {
 		panic(err)
 	}
-	fmt.Printf("result------> %s\n", res)
-
-	fmt.Println("commit")
 	_, err = env.App.Commit()
 	if err != nil {
 		panic(err)
@@ -193,8 +169,6 @@ func internalFinalizeBlock(envId uint64, base64ReqDeliverTx string, seconds uint
 	if err != nil {
 		panic(err)
 	}
-
-	fmt.Printf("block>>>>>>>. %s\n", bz)
 
 	envRegister.Store(envId, env)
 
@@ -225,52 +199,6 @@ func WasmSudo(envId uint64, bech32Address, msgJson string) *C.char {
 
 	return encodeBytesResultBytes(res)
 }
-
-// //export Execute
-// func Execute(envId uint64, base64ReqDeliverTx string) *C.char {
-// 	env := loadEnv(envId)
-// 	// Temp fix for concurrency issue
-// 	mu.Lock()
-// 	defer mu.Unlock()
-
-// 	reqDeliverTxBytes, err := base64.StdEncoding.DecodeString(base64ReqDeliverTx)
-// 	if err != nil {
-// 		panic(err)
-// 	}
-
-// 	newBlockTime := env.Ctx.BlockTime().Add(time.Duration(3) * time.Second)
-
-// 	reqDeliverTx := abci.RequestFinalizeBlock{
-// 		Txs:    [][]byte{reqDeliverTxBytes},
-// 		Height: env.Ctx.BlockHeight(), Time: newBlockTime,
-// 	}
-// 	err = proto.Unmarshal(reqDeliverTxBytes, &reqDeliverTx)
-// 	if err != nil {
-// 		return encodeErrToResultBytes(result.ExecuteError, err)
-// 	}
-
-// 	resDeliverTx, err := env.App.FinalizeBlock(&reqDeliverTx)
-// 	if err != nil {
-// 		panic(err)
-// 	}
-
-// 	// fmt.Printf("block %s\n", res)
-
-// 	fmt.Println("commit")
-// 	_, err = env.App.Commit()
-// 	if err != nil {
-// 		panic(err)
-// 	}
-
-// 	bz, err := proto.Marshal(resDeliverTx)
-// 	if err != nil {
-// 		panic(err)
-// 	}
-
-// 	envRegister.Store(envId, env)
-
-// 	return encodeBytesResultBytes(bz)
-// }
 
 //export Query
 func Query(envId uint64, path, base64QueryMsgBytes string) *C.char {
@@ -344,8 +272,6 @@ func AccountNumber(envId uint64, bech32Address string) uint64 {
 
 //export Simulate
 func Simulate(envId uint64, base64TxBytes string) *C.char { // => base64GasInfo
-	fmt.Println("Simulate")
-
 	env := loadEnv(envId)
 	// Temp fix for concurrency issue
 	mu.Lock()

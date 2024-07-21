@@ -135,7 +135,7 @@ mod tests {
         let mut buf_2 = vec![];
         GenericAuthorization::encode(
             &GenericAuthorization {
-                msg: "/untrnective.exchange.v1beta1.MsgCreateSpotLimitOrder".to_string(),
+                msg: "/neutron.dex.MsgDeposit".to_string(),
             },
             &mut buf_2,
         )

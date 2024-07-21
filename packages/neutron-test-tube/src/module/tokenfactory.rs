@@ -72,7 +72,7 @@ mod tests {
     fn tokenfactory_integration() {
         let app = NeutronTestApp::new();
         let signer = app
-            .init_account(&[Coin::new(100_000_000_000_000_000_000u128, "inj")])
+            .init_account(&[Coin::new(100_000_000_000_000_000_000u128, "untrn")])
             .unwrap();
         let tokenfactory = TokenFactory::new(&app);
         let bank = Bank::new(&app);

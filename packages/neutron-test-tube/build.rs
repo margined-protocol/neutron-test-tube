@@ -41,7 +41,7 @@ fn main() {
 
     let out_dir_lib_path = out_dir.join(lib_filename);
     if std::fs::metadata(&out_dir_lib_path).is_err()
-        || env::var("INJECTIVE_TUBE_DEV") == Ok("1".to_string())
+        || env::var("NEUTRON_TUBE_DEV") == Ok("1".to_string())
     {
         build_libntrntesttube(out_dir_lib_path);
     }

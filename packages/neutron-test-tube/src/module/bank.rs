@@ -51,22 +51,22 @@ mod tests {
     fn bank_integration() {
         let app = NeutronTestApp::new();
         let signer = app
-            .init_account(&[Coin::new(100_000_000_000_000_000_000u128, "inj")])
+            .init_account(&[Coin::new(100_000_000_000u128, "untrn")])
             .unwrap();
-        let receiver = app.init_account(&[Coin::new(1u128, "inj")]).unwrap();
+        let receiver = app.init_account(&[Coin::new(1u128, "untrn")]).unwrap();
         let bank = Bank::new(&app);
 
         let response = bank
             .query_balance(&QueryBalanceRequest {
                 address: receiver.address(),
-                denom: "inj".to_string(),
+                denom: "untrn".to_string(),
             })
             .unwrap();
         assert_eq!(
             response.balance.unwrap(),
             BaseCoin {
                 amount: 1u128.to_string(),
-                denom: "inj".to_string(),
+                denom: "untrn".to_string(),
             }
         );
 
@@ -76,7 +76,7 @@ mod tests {
                 to_address: receiver.address(),
                 amount: vec![BaseCoin {
                     amount: 9u128.to_string(),
-                    denom: "inj".to_string(),
+                    denom: "untrn".to_string(),
                 }],
             },
             &signer,

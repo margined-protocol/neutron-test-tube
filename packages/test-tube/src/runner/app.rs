@@ -51,7 +51,6 @@ impl BaseApp {
 
     /// Increase the time of the blockchain by the given number of seconds.
     pub fn increase_time(&self, seconds: u64) {
-        println!("Increasing time by {} seconds", seconds);
         unsafe {
             IncreaseTime(self.id, seconds.try_into().unwrap());
         }
@@ -104,7 +103,7 @@ impl BaseApp {
         let signing_key = SigningKey::from_slice(&secp256k1_priv).unwrap();
 
         let validator = SigningAccount::new(
-            "inj".to_string(),
+            "untrn".to_string(),
             signing_key,
             FeeSetting::Auto {
                 gas_price: Coin::new(NEUTRON_MIN_GAS_PRICE, denom),
@@ -182,7 +181,6 @@ impl BaseApp {
     where
         I: IntoIterator<Item = cosmrs::Any>,
     {
-        println!("Creating signed tx");
         let tx_body = tx::Body::new(msgs, "", 0u32);
         let addr = signer.address();
 
@@ -190,11 +188,7 @@ impl BaseApp {
 
         let seq = unsafe { AccountSequence(self.id, addr) };
 
-        println!("Account sequence: {:?}", seq);
-
         let account_number = unsafe { AccountNumber(self.id, addr) };
-
-        println!("Account number: {:?}", account_number);
 
         let signer_info = SignerInfo::single_direct(Some(signer.public_key()), seq);
         let auth_info = signer_info.auth_info(fee);
@@ -213,8 +207,6 @@ impl BaseApp {
         })?;
 
         let tx_raw = sign_doc.sign(signer.signing_key()).unwrap();
-
-        println!("Tx raw: {:?}", tx_raw);
 
         tx_raw
             .to_bytes()
@@ -259,7 +251,6 @@ impl BaseApp {
     where
         I: IntoIterator<Item = cosmrs::Any>,
     {
-        println!("Estimating fee");
         let res = match &signer.fee_setting() {
             FeeSetting::Auto {
                 gas_price,
@@ -368,8 +359,6 @@ impl<'a> Runner<'a> for BaseApp {
         R: ::prost::Message + Default,
     {
         unsafe {
-            println!("Executing multiple raw");
-            println!("msgs: {:?}", msgs);
             let fee = match &signer.fee_setting() {
                 FeeSetting::Auto { .. } => self.estimate_fee(msgs.clone(), signer)?,
                 FeeSetting::Custom { amount, gas_limit } => Fee::from_amount_and_gas(
@@ -380,8 +369,6 @@ impl<'a> Runner<'a> for BaseApp {
                     *gas_limit,
                 ),
             };
-
-            println!("here?");
 
             let tx = self.create_signed_tx(msgs.clone(), signer, fee)?;
             let base64_tx_bytes = BASE64_STANDARD.encode(tx);
@@ -400,8 +387,6 @@ impl<'a> Runner<'a> for BaseApp {
             let res = ResponseFinalizeBlock::decode(res.as_slice())
                 .unwrap()
                 .try_into();
-
-            println!("res: {:?}", res);
 
             res
         }

@@ -29,7 +29,7 @@ let accs = app
     .init_accounts(
         &[
             Coin::new(1_000_000_000_000, "usdt"),
-            Coin::new(1_000_000_000_000, "inj"),
+            Coin::new(1_000_000_000_000, "untrn"),
         ],
         2,
     )
@@ -53,7 +53,7 @@ let app = NeutronTestApp::new();
 
 let account = app.init_account(&[
     Coin::new(1_000_000_000_000, "usdt"),
-    Coin::new(1_000_000_000_000, "inj"),
+    Coin::new(1_000_000_000_000, "untrn"),
 ]);
 ```
 
@@ -75,7 +75,7 @@ let accs = app
     .init_accounts(
         &[
             Coin::new(1_000_000_000_000, "usdt"),
-            Coin::new(1_000_000_000_000, "inj"),
+            Coin::new(1_000_000_000_000, "untrn"),
         ],
         2,
     )
@@ -111,7 +111,7 @@ let accs = app
     .init_accounts(
         &[
             Coin::new(1_000_000_000_000, "usdt"),
-            Coin::new(1_000_000_000_000, "inj"),
+            Coin::new(1_000_000_000_000, "untrn"),
         ],
         2,
     )
@@ -170,7 +170,7 @@ let accs = app
     .init_accounts(
         &[
             Coin::new(1_000_000_000_000, "usdt"),
-            Coin::new(1_000_000_000_000, "inj"),
+            Coin::new(1_000_000_000_000, "untrn"),
         ],
         2,
     )
@@ -247,100 +247,64 @@ Module wrappers provides convenient functions to interact with the appchain's mo
 Let's try to interact with `Exchange` module:
 
 ```rust
-use cosmwasm_std::{Addr, Coin};
-use neutron_std::types::neutron::exchange::v1beta1::{
-    MarketStatus, MsgInstantSpotMarketLaunch,
-    QuerySpotMarketsRequest, QuerySpotMarketsResponse, SpotMarket,
+use cosmwasm_std::Coin;
+use neutron_std::shim::Any;
+use neutron_std::types::{
+    cosmos::bank::v1beta1::{MsgSend, QueryBalanceRequest, SendAuthorization},
+    cosmos::base::v1beta1::Coin as BaseCoin,
+    neutron::dex as DexTypes,
 };
-use neutron_test_tube::{Account, Exchange, NeutronTestApp};
-use test_tube_inj::Module;
+use prost::Message;
+
+use crate::{Account, Bank, Dex, NeutronTestApp};
+use test_tube_ntrn::Module;
 
 let app = NeutronTestApp::new();
 let signer = app
     .init_account(&[
-        Coin::new(10_000_000_000_000_000_000_000u128, "inj"),
-        Coin::new(100_000_000_000_000_000_000u128, "usdt"),
+        Coin::new(1_000_000_000_000_000_000_000_000u128, "untrn"),
+        Coin::new(1_000_000_000_000u128, "usdc"),
     ])
     .unwrap();
-let trader = app
-    .init_account(&[
-        Coin::new(10_000_000_000_000_000_000_000u128, "inj"),
-        Coin::new(100_000_000_000_000_000_000u128, "usdt"),
-    ])
+let receiver = app
+    .init_account(&[Coin::new(1_000_000_000_000u128, "untrn")])
     .unwrap();
-let exchange = Exchange::new(&app);
+let dex = Dex::new(&app);
+let bank = Bank::new(&app);
 
-exchange
-    .instant_spot_market_launch(
-        MsgInstantSpotMarketLaunch {
-            sender: signer.address(),
-            ticker: "INJ/USDT".to_owned(),
-            base_denom: "inj".to_owned(),
-            quote_denom: "usdt".to_owned(),
-            min_price_tick_size: "10000".to_owned(),
-            min_quantity_tick_size: "100000".to_owned(),
+let scale_factor = 1_000_000_000_000_000_000u128;
+
+let res = dex
+    .place_limit_order(
+        DexTypes::MsgPlaceLimitOrder {
+            creator: signer.address().clone(),
+            receiver: signer.address().clone(),
+            token_in: "untrn".to_string(),
+            token_out: "usdc".to_string(),
+            tick_index_in_to_out: 0,
+            amount_in: (10_000_000_000_000_000_00u128).to_string(),
+            order_type: 0,
+            expiration_time: None,
+            max_amount_out: "".to_string(),
+            limit_sell_price: (10u128 * scale_factor).to_string(),
         },
         &signer,
     )
     .unwrap();
 
-exchange
-    .instant_spot_market_launch(
-        MsgInstantSpotMarketLaunch {
-            sender: signer.address(),
-            ticker: "INJ/USDT".to_owned(),
-            base_denom: "inj".to_owned(),
-            quote_denom: "usdt".to_owned(),
-            min_price_tick_size: "10000".to_owned(),
-            min_quantity_tick_size: "100000".to_owned(),
-        },
-        &signer,
-    )
-    .unwrap_err();
-
-app.increase_time(1u64);
-
-let spot_markets = exchange
-    .query_spot_markets(&QuerySpotMarketsRequest {
-        status: "Active".to_owned(),
-        market_ids: vec![],
+let res = dex
+    .tick_liquidity_all(&DexTypes::QueryAllTickLiquidityRequest {
+        pair_id: "untrn<>usdc".to_string(),
+        token_in: "untrn".to_string(),
+        pagination: None,
     })
     .unwrap();
 
-let expected_response = QuerySpotMarketsResponse {
-    markets: vec![SpotMarket {
-        ticker: "INJ/USDT".to_string(),
-        base_denom: "inj".to_string(),
-        quote_denom: "usdt".to_string(),
-        maker_fee_rate: "-100000000000000".to_string(),
-        taker_fee_rate: "1000000000000000".to_string(),
-        relayer_fee_share_rate: "400000000000000000".to_string(),
-        market_id: "0xd5a22be807011d5e42d5b77da3f417e22676efae494109cd01c242ad46630115"
-            .to_string(),
-        status: MarketStatus::Active.into(),
-        min_price_tick_size: "10000".to_string(),
-        min_quantity_tick_size: "100000".to_string(),
-    }],
-};
-assert_eq!(spot_markets, expected_response);
+app.increase_time(1u64);
 ```
 
 Additional examples can be found in the [modules](./src/module/) directory.
 
 ## Versioning
 
-The version of neutron-test-tube is determined by the versions of its dependencies, neutron and test-tube, as well as its own changes. The version is represented in the format A.B.C, where:
-
-- A is the major version of neutron,
-- B is the minor version of test-tube,
-- C is the patch number of neutron-test-tube itself.
-
-When a new version of neutron is released and contains breaking changes, we will also release breaking changes from test-tube if any and increment the major version of neutron-test-tube. This way, it's clear that the new version of neutron-test-tube is not backwards-compatible with previous versions.
-
-When adding a new feature to neutron-test-tube that is backward-compatible, the minor version number will be incremented.
-
-When fixing bugs or making other changes that are `neutron-test-tube` specific and backward-compatible, the patch number will be incremented.
-
-Please review the upgrade guide for upgrading the package, in case of breaking changes
-
-It is important to note that we track the version of the package independent of the version of dependencies.
+The version of `neutron-test-tube` follows that of Neutron mainnet releases.

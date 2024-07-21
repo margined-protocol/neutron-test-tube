@@ -73,13 +73,13 @@ pub mod app;
 //     #[test]
 //     fn test_execute_cosmos_msgs() {
 //         let app = InjectiveTestApp::new();
-//         let signer = app.init_account(&[Coin::new(10000000000, "inj")]).unwrap();
+//         let signer = app.init_account(&[Coin::new(10000000000, "untrn")]).unwrap();
 
 //         let bank = Bank::new(&app);
 
 //         // BankMsg::Send
 //         let to = app.init_account(&[]).unwrap();
-//         let coin = Coin::new(100, "inj");
+//         let coin = Coin::new(100, "untrn");
 //         let send_msg = CosmosMsg::Bank(BankMsg::Send {
 //             to_address: to.address(),
 //             amount: vec![coin],
@@ -89,12 +89,12 @@ pub mod app;
 //         let balance = bank
 //             .query_balance(&QueryBalanceRequest {
 //                 address: to.address(),
-//                 denom: "inj".to_string(),
+//                 denom: "untrn".to_string(),
 //             })
 //             .unwrap()
 //             .balance;
 //         assert_eq!(balance.clone().unwrap().amount, "100".to_string());
-//         assert_eq!(balance.unwrap().denom, "inj".to_string());
+//         assert_eq!(balance.unwrap().denom, "untrn".to_string());
 
 //         // WasmMsg, first upload a contract
 //         let wasm = Wasm::new(&app);

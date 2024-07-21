@@ -159,9 +159,9 @@ mod tests {
         },
     };
 
-    // use crate::module::{TokenFactory, Wasm};
+    use crate::module::{Bank, TokenFactory, Wasm};
     use crate::runner::app::NeutronTestApp;
-    // use crate::Bank;
+
     use test_tube_ntrn::account::{Account, FeeSetting};
     use test_tube_ntrn::module::Module;
     use test_tube_ntrn::runner::*;
@@ -252,6 +252,8 @@ mod tests {
             .execute(msg, "/osmosis.tokenfactory.v1beta1.MsgCreateDenom", &acc)
             .unwrap();
 
+        println!("{:?}", res);
+
         let create_denom_attrs = &res.data.new_token_denom;
         assert_eq!(
             create_denom_attrs,
@@ -282,262 +284,92 @@ mod tests {
             .unwrap();
 
         assert_eq!(app.get_block_height(), 5i64);
-
-        // let acc_2 = app
-        //     .init_account(&coins(100_000_000_000_000_000_000u128, "inj")) // 100 inj
-        //     .unwrap();
-        // assert_eq!(app.get_block_height(), 6i64);
-
-        // // execute on more time to excercise account sequence
-        // let msg = MsgCreateDenom {
-        //     sender: acc.address(),
-        //     subdenom: "multidenom_3".to_string(),
-        // };
-
-        // let msg_2 = MsgCreateDenom {
-        //     sender: acc.address(),
-        //     subdenom: "multidenom_4".to_string(),
-        // };
-
-        // let msg_3 = MsgCreateDenom {
-        //     sender: acc_2.address(),
-        //     subdenom: "multidenom_5".to_string(),
-        // };
-
-        // let res: Vec<ExecuteResponse<MsgCreateDenomResponse>> = app
-        //     .execute_single_block(&[
-        //         (msg, "/osmosis.tokenfactory.v1beta1.MsgCreateDenom", &acc),
-        //         (msg_2, "/osmosis.tokenfactory.v1beta1.MsgCreateDenom", &acc),
-        //         (
-        //             msg_3,
-        //             "/osmosis.tokenfactory.v1beta1.MsgCreateDenom",
-        //             &acc_2,
-        //         ),
-        //     ])
-        //     .unwrap();
-
-        // assert_eq!(res.len(), 3);
-
-        // assert_eq!(app.get_block_height(), 7i64);
-
-        // let tokenfactory = TokenFactory::new(&app);
-
-        // // Ensure denoms are created by acc
-        // let denoms = tokenfactory
-        //     .query_denoms_from_creator(&QueryDenomsFromCreatorRequest {
-        //         creator: acc.address(),
-        //     })
-        //     .unwrap()
-        //     .denoms;
-
-        // assert_eq!(denoms.len(), 6);
-
-        // // Ensure denoms are created by acc_2
-        // let denoms = tokenfactory
-        //     .query_denoms_from_creator(&QueryDenomsFromCreatorRequest {
-        //         creator: acc_2.address(),
-        //     })
-        //     .unwrap()
-        //     .denoms;
-
-        // assert_eq!(denoms.len(), 1);
     }
 
-    // #[test]
-    // fn test_query() {
-    //     let app = NeutronTestApp::default();
+    #[test]
+    fn test_query() {
+        let app = NeutronTestApp::default();
 
-    //     let denom_creation_fee = app
-    //         .query::<QueryParamsRequest, QueryParamsResponse>(
-    //             "/osmosis.tokenfactory.v1beta1.Query/Params",
-    //             &QueryParamsRequest {},
-    //         )
-    //         .unwrap()
-    //         .params
-    //         .unwrap()
-    //         .denom_creation_fee;
+        let denom_creation_fee = app
+            .query::<QueryParamsRequest, QueryParamsResponse>(
+                "/osmosis.tokenfactory.v1beta1.Query/Params",
+                &QueryParamsRequest {},
+            )
+            .unwrap()
+            .params
+            .unwrap()
+            .denom_creation_fee;
 
-    //     assert_eq!(
-    //         denom_creation_fee,
-    //         [Coin::new(10_000_000_000_000_000_000u128, "inj").into()]
-    //     )
-    // }
+        // fee is no longer set
+        assert_eq!(denom_creation_fee, [])
+    }
 
-    // #[test]
-    // fn test_wasm_migrate() {
-    //     use cosmwasm_std::Empty;
-    //     use cw1_whitelist::msg::*;
+    #[test]
+    fn test_wasm_execute_and_query() {
+        use cw1_whitelist::msg::*;
 
-    //     let app = NeutronTestApp::default();
-    //     let accs = app
-    //         .init_accounts(
-    //             &[
-    //                 Coin::new(1_000_000_000_000, "uatom"),
-    //                 Coin::new(1_000_000_000_000, "inj"),
-    //             ],
-    //             1,
-    //         )
-    //         .unwrap();
-    //     let admin = &accs[0];
+        let app = NeutronTestApp::default();
+        let accs = app
+            .init_accounts(
+                &[
+                    Coin::new(1_000_000_000_000, "uatom"),
+                    Coin::new(1_000_000_000_000, "untrn"),
+                ],
+                2,
+            )
+            .unwrap();
+        let admin = &accs[0];
+        let new_admin = &accs[1];
 
-    //     let wasm = Wasm::new(&app);
-    //     let wasm_byte_code = std::fs::read("./test_artifacts/cw1_subkeys.wasm").unwrap();
-    //     let code_id = wasm
-    //         .store_code(&wasm_byte_code, None, admin)
-    //         .unwrap()
-    //         .data
-    //         .code_id;
-    //     assert_eq!(code_id, 1);
+        let wasm = Wasm::new(&app);
+        let wasm_byte_code = std::fs::read("./test_artifacts/cw1_whitelist.wasm").unwrap();
+        let code_id = wasm
+            .store_code(&wasm_byte_code, None, admin)
+            .unwrap()
+            .data
+            .code_id;
+        assert_eq!(code_id, 1);
 
-    //     // initialize admins and check if the state is correct
-    //     let init_admins = vec![admin.address()];
-    //     let contract_addr = wasm
-    //         .instantiate(
-    //             code_id,
-    //             &InstantiateMsg {
-    //                 admins: init_admins.clone(),
-    //                 mutable: true,
-    //             },
-    //             Some(&admin.address()),
-    //             Some("Test label"),
-    //             &[],
-    //             admin,
-    //         )
-    //         .unwrap()
-    //         .data
-    //         .address;
-    //     let admin_list = wasm
-    //         .query::<QueryMsg, AdminListResponse>(&contract_addr, &QueryMsg::AdminList {})
-    //         .unwrap();
-    //     assert_eq!(admin_list.admins, init_admins);
-    //     assert!(admin_list.mutable);
+        // initialize admins and check if the state is correct
+        let init_admins = vec![admin.address()];
+        let contract_addr = wasm
+            .instantiate(
+                code_id,
+                &InstantiateMsg {
+                    admins: init_admins.clone(),
+                    mutable: true,
+                },
+                Some(&admin.address()),
+                Some("Test label"),
+                &[],
+                admin,
+            )
+            .unwrap()
+            .data
+            .address;
+        let admin_list = wasm
+            .query::<QueryMsg, AdminListResponse>(&contract_addr, &QueryMsg::AdminList {})
+            .unwrap();
+        assert_eq!(admin_list.admins, init_admins);
+        assert!(admin_list.mutable);
 
-    //     let code_id = wasm
-    //         .store_code(&wasm_byte_code, None, admin)
-    //         .unwrap()
-    //         .data
-    //         .code_id;
-    //     assert_eq!(code_id, 2);
+        // update admin and check again
+        let new_admins = vec![new_admin.address()];
+        wasm.execute::<ExecuteMsg>(
+            &contract_addr,
+            &ExecuteMsg::UpdateAdmins {
+                admins: new_admins.clone(),
+            },
+            &[],
+            admin,
+        )
+        .unwrap();
 
-    //     wasm.migrate(code_id, &contract_addr, &Empty {}, admin)
-    //         .unwrap();
+        let admin_list = wasm
+            .query::<QueryMsg, AdminListResponse>(&contract_addr, &QueryMsg::AdminList {})
+            .unwrap();
 
-    //     let admin_list = wasm
-    //         .query::<QueryMsg, AdminListResponse>(&contract_addr, &QueryMsg::AdminList {})
-    //         .unwrap();
-    //     assert_eq!(admin_list.admins, init_admins);
-    //     assert!(admin_list.mutable);
-    // }
-
-    // #[test]
-    // fn test_wasm_execute_and_query() {
-    //     use cw1_whitelist::msg::*;
-
-    //     let app = NeutronTestApp::default();
-    //     let accs = app
-    //         .init_accounts(
-    //             &[
-    //                 Coin::new(1_000_000_000_000, "uatom"),
-    //                 Coin::new(1_000_000_000_000, "inj"),
-    //             ],
-    //             2,
-    //         )
-    //         .unwrap();
-    //     let admin = &accs[0];
-    //     let new_admin = &accs[1];
-
-    //     let wasm = Wasm::new(&app);
-    //     let wasm_byte_code = std::fs::read("./test_artifacts/cw1_whitelist.wasm").unwrap();
-    //     let code_id = wasm
-    //         .store_code(&wasm_byte_code, None, admin)
-    //         .unwrap()
-    //         .data
-    //         .code_id;
-    //     assert_eq!(code_id, 1);
-
-    //     // initialize admins and check if the state is correct
-    //     let init_admins = vec![admin.address()];
-    //     let contract_addr = wasm
-    //         .instantiate(
-    //             code_id,
-    //             &InstantiateMsg {
-    //                 admins: init_admins.clone(),
-    //                 mutable: true,
-    //             },
-    //             Some(&admin.address()),
-    //             Some("Test label"),
-    //             &[],
-    //             admin,
-    //         )
-    //         .unwrap()
-    //         .data
-    //         .address;
-    //     let admin_list = wasm
-    //         .query::<QueryMsg, AdminListResponse>(&contract_addr, &QueryMsg::AdminList {})
-    //         .unwrap();
-    //     assert_eq!(admin_list.admins, init_admins);
-    //     assert!(admin_list.mutable);
-
-    //     // update admin and check again
-    //     let new_admins = vec![new_admin.address()];
-    //     wasm.execute::<ExecuteMsg>(
-    //         &contract_addr,
-    //         &ExecuteMsg::UpdateAdmins {
-    //             admins: new_admins.clone(),
-    //         },
-    //         &[],
-    //         admin,
-    //     )
-    //     .unwrap();
-
-    //     let admin_list = wasm
-    //         .query::<QueryMsg, AdminListResponse>(&contract_addr, &QueryMsg::AdminList {})
-    //         .unwrap();
-
-    //     assert_eq!(admin_list.admins, new_admins);
-    //     assert!(admin_list.mutable);
-    // }
-
-    // #[test]
-    // fn test_custom_fee() {
-    //     let app = NeutronTestApp::default();
-    //     let initial_balance = 1_000_000_000_000;
-    //     let alice = app.init_account(&coins(initial_balance, "inj")).unwrap();
-    //     let bob = app.init_account(&coins(initial_balance, "inj")).unwrap();
-
-    //     let amount = Coin::new(1_000_000, "inj");
-    //     let gas_limit = 100_000_000;
-
-    //     // use FeeSetting::Auto by default, so should not equal newly custom fee setting
-    //     let wasm = Wasm::new(&app);
-    //     let wasm_byte_code = std::fs::read("./test_artifacts/cw1_whitelist.wasm").unwrap();
-    //     let res = wasm.store_code(&wasm_byte_code, None, &alice).unwrap();
-
-    //     assert_ne!(res.gas_info.gas_wanted, gas_limit);
-
-    //     //update fee setting
-    //     let bob = bob.with_fee_setting(FeeSetting::Custom {
-    //         amount: amount.clone(),
-    //         gas_limit,
-    //     });
-    //     let res = wasm.store_code(&wasm_byte_code, None, &bob).unwrap();
-
-    //     let bob_balance = Bank::new(&app)
-    //         .query_all_balances(&QueryAllBalancesRequest {
-    //             address: bob.address(),
-    //             pagination: None,
-    //             resolve_denom: false,
-    //         })
-    //         .unwrap()
-    //         .balances
-    //         .into_iter()
-    //         .find(|c| c.denom == "inj")
-    //         .unwrap()
-    //         .amount
-    //         .parse::<u128>()
-    //         .unwrap();
-
-    //     assert_eq!(res.gas_info.gas_wanted, gas_limit);
-    //     assert_eq!(bob_balance, initial_balance - amount.amount.u128());
-    // }
+        assert_eq!(admin_list.admins, new_admins);
+        assert!(admin_list.mutable);
+    }
 }
