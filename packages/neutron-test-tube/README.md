@@ -4,6 +4,9 @@ CosmWasm x Neutron integration testing library that, unlike `cw-multi-test`, it 
 
 Please refer to [`CHANGELOG`](./CHANGELOG.md) for features and update information.
 
+NOTE: If you need to test IBC specific functionality like IBC transactions / queries, this test framework does not support it.
+Please refer to https://github.com/neutron-org/neutron-integration-tests on how to do that.
+
 ## Table of Contents
 
 - [Getting Started](#getting-started)
