@@ -54,9 +54,9 @@ where
         pub limit_order_tranche_user_all ["/neutron.dex.Query/LimitOrderTrancheUserAll"]: DexTypes::QueryAllLimitOrderTrancheUserRequest => DexTypes::QueryAllLimitOrderTrancheUserResponse
     }
 
-    // fn_query! {
-    //     pub limit_order_tranche_user_all_by_address ["/neutron.dex.Query/LimitOrderTrancheUserAllByAddress"]: DexTypes::QueryAllLimitOrderTrancheUserByAddressRequest => DexTypes::QueryAllLimitOrderTrancheUserByAddressResponse
-    // }
+    fn_query! {
+        pub limit_order_tranche_user_all_by_address ["/neutron.dex.Query/LimitOrderTrancheUserAllByAddress"]: DexTypes::QueryAllUserLimitOrdersRequest => DexTypes::QueryAllUserLimitOrdersResponse
+    }
 
     fn_query! {
         pub limit_order_tranche ["/neutron.dex.Query/LimitOrderTranche"]: DexTypes::QueryGetLimitOrderTrancheRequest => DexTypes::QueryGetLimitOrderTrancheResponse

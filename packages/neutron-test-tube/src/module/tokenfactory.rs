@@ -61,7 +61,6 @@ where
 mod tests {
     use cosmwasm_std::{Coin, Uint128};
     use cosmos_sdk_proto::cosmos::bank::v1beta1::QueryBalanceRequest;
-    // use cosmos_sdk_proto::cosmos::base::v1beta1::Coin;
     use neutron_sdk::proto_types::osmosis::tokenfactory::v1beta1::{
         MsgBurn, MsgCreateDenom, MsgMint, QueryDenomsFromCreatorRequest,
     };

@@ -148,7 +148,7 @@ impl<'a> Runner<'a> for NeutronTestApp {
 
 #[cfg(test)]
 mod tests {
-    use cosmwasm_std::{coins, Coin, Uint128};
+    use cosmwasm_std::{coins, Coin};
     use neutron_sdk::proto_types::osmosis::tokenfactory::v1beta1::{
         MsgCreateDenom, MsgCreateDenomResponse, QueryParamsRequest, QueryParamsResponse,
     };
@@ -304,8 +304,8 @@ mod tests {
         let accs = app
             .init_accounts(
                 &[
-                    Coin::new(Uint128::new(1_000_000_000_000), "uatom"),
-                    Coin::new(Uint128::new(1_000_000_000_000), "untrn"),
+                    Coin::new(1_000_000_000_000u128, "uatom"),
+                    Coin::new(1_000_000_000_000u128, "untrn"),
                 ],
                 2,
             )

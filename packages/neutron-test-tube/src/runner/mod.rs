@@ -8,7 +8,7 @@ mod tests {
     use super::app::NeutronTestApp;
     use base64::prelude::BASE64_STANDARD;
     use base64::Engine;
-    use cosmwasm_std::{to_json_binary, BankMsg, Coin, CosmosMsg, Empty, Event, WasmMsg, Uint128, Binary};
+    use cosmwasm_std::{to_json_binary, BankMsg, Coin, CosmosMsg, Empty, Event, WasmMsg, Binary};
     use cw1_whitelist::msg::{ExecuteMsg, InstantiateMsg};
     use neutron_sdk::proto_types::osmosis::tokenfactory::v1beta1::{
         MsgCreateDenom, MsgCreateDenomResponse,
@@ -18,7 +18,6 @@ mod tests {
         cosmwasm::wasm::v1::{MsgExecuteContractResponse, MsgInstantiateContractResponse},
     };
     use std::ffi::CString;
-    use cosmos_sdk_proto::traits::MessageExt;
     use prost::Message;
     use test_tube_ntrn::account::Account;
     use test_tube_ntrn::runner::error::RunnerError::QueryError;
@@ -76,14 +75,14 @@ mod tests {
     fn test_execute_cosmos_msgs() {
         let app = NeutronTestApp::new();
         let signer = app
-            .init_account(&[Coin::new(Uint128::new(10000000000), "untrn")])
+            .init_account(&[Coin::new(10000000000u128, "untrn")])
             .unwrap();
 
         let bank = Bank::new(&app);
 
         // BankMsg::Send
         let to = app.init_account(&[]).unwrap();
-        let coin = Coin::new(Uint128::new(100), "untrn");
+        let coin = Coin::new(100u128, "untrn");
         let send_msg = CosmosMsg::Bank(BankMsg::Send {
             to_address: to.address(),
             amount: vec![coin],
@@ -149,7 +148,8 @@ mod tests {
 
         // Stargate
         let denom = "test".to_string();
-        let create_denom_msg: CosmosMsg = cosmwasm_std::CosmosMsg::Stargate {
+        #[allow(deprecated)]
+        let create_denom_msg: CosmosMsg = CosmosMsg::Stargate {
             type_url: "/osmosis.tokenfactory.v1beta1.MsgCreateDenom".to_string(),
             value: Binary::from(MsgCreateDenom {
                 sender: signer.address(),
