@@ -17,8 +17,8 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	"github.com/cosmos/gogoproto/proto"
-	"github.com/margined-protocol/test-tube/neutron-test-tube/result"
-	"github.com/margined-protocol/test-tube/neutron-test-tube/testenv"
+	"github.com/neutron-org/neutron-test-tube/neutron-test-tube/result"
+	"github.com/neutron-org/neutron-test-tube/neutron-test-tube/testenv"
 	"github.com/pkg/errors"
 
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"

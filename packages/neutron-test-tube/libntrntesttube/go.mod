@@ -1,4 +1,4 @@
-module github.com/margined-protocol/test-tube/neutron-test-tube
+module github.com/neutron-org/neutron-test-tube/neutron-test-tube
 
 go 1.22.3
 
