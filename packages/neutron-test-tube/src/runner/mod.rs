@@ -6,7 +6,6 @@ mod tests {
     use crate::{Bank, Wasm};
 
     use super::app::NeutronTestApp;
-    use base64::engine::general_purpose::STANDARD as BASE64_STANDARD;
     use base64::Engine;
     use cosmwasm_std::{to_json_binary, BankMsg, Coin, CosmosMsg, Empty, Event, WasmMsg};
     use cw1_whitelist::msg::{ExecuteMsg, InstantiateMsg};
@@ -56,9 +55,8 @@ mod tests {
 
     #[test]
     fn test_raw_result_ptr_with_0_bytes_in_content_should_not_error() {
-        let base64_string = BASE64_STANDARD
-            .decode([vec![0u8], vec![0u8]].concat())
-            .unwrap();
+        let base64_string =
+            base64::engine::general_purpose::STANDARD.encode([vec![0u8], vec![0u8]].concat());
         let res = unsafe { RawResult::from_ptr(CString::new(base64_string).unwrap().into_raw()) }
             .unwrap()
             .into_result()
