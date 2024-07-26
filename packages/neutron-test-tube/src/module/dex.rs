@@ -1,4 +1,4 @@
-use margined_neutron_std::types::neutron::dex as DexTypes;
+use neutron_std::types::neutron::dex as DexTypes;
 use test_tube_ntrn::{fn_execute, fn_query};
 
 use test_tube_ntrn::module::Module;
@@ -118,7 +118,7 @@ where
 #[cfg(test)]
 mod tests {
     use cosmwasm_std::Coin;
-    use margined_neutron_std::types::neutron::dex as DexTypes;
+    use neutron_std::types::neutron::dex as DexTypes;
 
     use crate::{Account, Dex, NeutronTestApp};
     use test_tube_ntrn::Module;

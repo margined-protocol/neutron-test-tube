@@ -10,10 +10,10 @@ mod tests {
     use base64::Engine;
     use cosmwasm_std::{to_json_binary, BankMsg, Coin, CosmosMsg, Empty, Event, WasmMsg};
     use cw1_whitelist::msg::{ExecuteMsg, InstantiateMsg};
-    use margined_neutron_std::types::osmosis::tokenfactory::v1beta1::{
+    use neutron_std::types::osmosis::tokenfactory::v1beta1::{
         MsgCreateDenom, MsgCreateDenomResponse,
     };
-    use margined_neutron_std::types::{
+    use neutron_std::types::{
         cosmos::bank::v1beta1::{MsgSendResponse, QueryBalanceRequest},
         cosmwasm::wasm::v1::{MsgExecuteContractResponse, MsgInstantiateContractResponse},
     };

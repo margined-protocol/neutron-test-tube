@@ -1,8 +1,8 @@
-use margined_neutron_std::types::cosmos::gov::v1::{
+use neutron_std::types::cosmos::gov::v1::{
     MsgSubmitProposal, MsgSubmitProposalResponse, MsgVote, MsgVoteResponse, QueryProposalRequest,
     QueryProposalResponse,
 };
-use margined_neutron_std::types::cosmos::gov::v1beta1;
+use neutron_std::types::cosmos::gov::v1beta1;
 use test_tube_ntrn::module::Module;
 use test_tube_ntrn::runner::Runner;
 use test_tube_ntrn::{fn_execute, fn_query};

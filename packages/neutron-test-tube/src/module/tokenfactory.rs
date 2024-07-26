@@ -1,4 +1,4 @@
-use margined_neutron_std::types::osmosis::tokenfactory::v1beta1::{
+use neutron_std::types::osmosis::tokenfactory::v1beta1::{
     MsgBurn, MsgBurnResponse, MsgChangeAdmin, MsgChangeAdminResponse, MsgCreateDenom,
     MsgCreateDenomResponse, MsgMint, MsgMintResponse, MsgSetDenomMetadata,
     MsgSetDenomMetadataResponse, QueryDenomAuthorityMetadataRequest,
@@ -60,8 +60,8 @@ where
 #[cfg(test)]
 mod tests {
     use cosmwasm_std::Coin;
-    use margined_neutron_std::types::cosmos::bank::v1beta1::QueryBalanceRequest;
-    use margined_neutron_std::types::osmosis::tokenfactory::v1beta1::{
+    use neutron_std::types::cosmos::bank::v1beta1::QueryBalanceRequest;
+    use neutron_std::types::osmosis::tokenfactory::v1beta1::{
         MsgBurn, MsgCreateDenom, MsgMint, QueryDenomsFromCreatorRequest,
     };
 
@@ -106,7 +106,7 @@ mod tests {
         assert_eq!(denoms, [denom.clone()]);
 
         // TODO mint new denom
-        let coin: margined_neutron_std::types::cosmos::base::v1beta1::Coin =
+        let coin: neutron_std::types::cosmos::base::v1beta1::Coin =
             Coin::new(1000000000, denom.clone()).into();
         tokenfactory
             .mint(
