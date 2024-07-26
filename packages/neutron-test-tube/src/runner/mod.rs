@@ -6,7 +6,9 @@ mod tests {
     use crate::{Bank, Wasm};
 
     use super::app::NeutronTestApp;
-    use cosmwasm_std::{to_binary, BankMsg, Coin, CosmosMsg, Empty, Event, WasmMsg};
+    use base64::engine::general_purpose::STANDARD as BASE64_STANDARD;
+    use base64::Engine;
+    use cosmwasm_std::{to_json_binary, BankMsg, Coin, CosmosMsg, Empty, Event, WasmMsg};
     use cw1_whitelist::msg::{ExecuteMsg, InstantiateMsg};
     use std::ffi::CString;
 
@@ -18,10 +20,10 @@ mod tests {
         cosmwasm::wasm::v1::{MsgExecuteContractResponse, MsgInstantiateContractResponse},
     };
     use test_tube_ntrn::account::Account;
-    use test_tube_ntrn::runner::error::RunnerError::{ExecuteError, QueryError};
+    use test_tube_ntrn::runner::error::RunnerError::QueryError;
     use test_tube_ntrn::runner::result::RawResult;
     use test_tube_ntrn::runner::Runner;
-    use test_tube_ntrn::{Module, RunnerExecuteResult};
+    use test_tube_ntrn::Module;
 
     #[derive(::prost::Message)]
     struct AdhocRandomQueryRequest {
@@ -54,17 +56,13 @@ mod tests {
 
     #[test]
     fn test_raw_result_ptr_with_0_bytes_in_content_should_not_error() {
-        let base64_string = base64::encode(vec![vec![0u8], vec![0u8]].concat());
-        let res = unsafe {
-            RawResult::from_ptr(
-                CString::new(base64_string.as_bytes().to_vec())
-                    .unwrap()
-                    .into_raw(),
-            )
-        }
-        .unwrap()
-        .into_result()
-        .unwrap();
+        let base64_string = BASE64_STANDARD
+            .decode([vec![0u8], vec![0u8]].concat())
+            .unwrap();
+        let res = unsafe { RawResult::from_ptr(CString::new(base64_string).unwrap().into_raw()) }
+            .unwrap()
+            .into_result()
+            .unwrap();
 
         assert_eq!(res, vec![0u8]);
     }
@@ -110,7 +108,7 @@ mod tests {
         // Wasm::Instantiate
         let instantiate_msg: CosmosMsg = CosmosMsg::Wasm(WasmMsg::Instantiate {
             code_id,
-            msg: to_binary(&InstantiateMsg {
+            msg: to_json_binary(&InstantiateMsg {
                 admins: vec![signer.address()],
                 mutable: true,
             })
@@ -128,7 +126,7 @@ mod tests {
         // Wasm::Execute
         let execute_msg: CosmosMsg = CosmosMsg::Wasm(WasmMsg::Execute {
             contract_addr: contract_address.clone(),
-            msg: to_binary(&ExecuteMsg::<Empty>::Freeze {}).unwrap(),
+            msg: to_json_binary(&ExecuteMsg::<Empty>::Freeze {}).unwrap(),
             funds: vec![],
         });
         let execute_res = app

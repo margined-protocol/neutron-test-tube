@@ -118,15 +118,9 @@ where
 #[cfg(test)]
 mod tests {
     use cosmwasm_std::Coin;
-    use margined_neutron_std::shim::Any;
-    use margined_neutron_std::types::{
-        cosmos::bank::v1beta1::{MsgSend, QueryBalanceRequest, SendAuthorization},
-        cosmos::base::v1beta1::Coin as BaseCoin,
-        neutron::dex as DexTypes,
-    };
-    use prost::Message;
+    use margined_neutron_std::types::neutron::dex as DexTypes;
 
-    use crate::{Account, Bank, Dex, NeutronTestApp};
+    use crate::{Account, Dex, NeutronTestApp};
     use test_tube_ntrn::Module;
 
     #[test]
@@ -138,38 +132,32 @@ mod tests {
                 Coin::new(1_000_000_000_000u128, "usdc"),
             ])
             .unwrap();
-        let receiver = app
-            .init_account(&[Coin::new(1_000_000_000_000u128, "untrn")])
-            .unwrap();
         let dex = Dex::new(&app);
-        let bank = Bank::new(&app);
 
         let scale_factor = 1_000_000_000_000_000_000u128;
 
-        let res = dex
-            .place_limit_order(
-                DexTypes::MsgPlaceLimitOrder {
-                    creator: signer.address().clone(),
-                    receiver: signer.address().clone(),
-                    token_in: "untrn".to_string(),
-                    token_out: "usdc".to_string(),
-                    tick_index_in_to_out: 0,
-                    amount_in: (10_000_000_000_000_000_00u128).to_string(),
-                    order_type: 0,
-                    expiration_time: None,
-                    max_amount_out: "".to_string(),
-                    limit_sell_price: (10u128 * scale_factor).to_string(),
-                },
-                &signer,
-            )
-            .unwrap();
-
-        let res = dex
-            .tick_liquidity_all(&DexTypes::QueryAllTickLiquidityRequest {
-                pair_id: "untrn<>usdc".to_string(),
+        dex.place_limit_order(
+            DexTypes::MsgPlaceLimitOrder {
+                creator: signer.address().clone(),
+                receiver: signer.address().clone(),
                 token_in: "untrn".to_string(),
-                pagination: None,
-            })
-            .unwrap();
+                token_out: "usdc".to_string(),
+                tick_index_in_to_out: 0,
+                amount_in: 1_000_000_000_000_000_000u128.to_string(),
+                order_type: 0,
+                expiration_time: None,
+                max_amount_out: "".to_string(),
+                limit_sell_price: (10u128 * scale_factor).to_string(),
+            },
+            &signer,
+        )
+        .unwrap();
+
+        dex.tick_liquidity_all(&DexTypes::QueryAllTickLiquidityRequest {
+            pair_id: "untrn<>usdc".to_string(),
+            token_in: "untrn".to_string(),
+            pagination: None,
+        })
+        .unwrap();
     }
 }

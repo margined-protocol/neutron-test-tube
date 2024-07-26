@@ -4,6 +4,7 @@ mod module;
 mod runner;
 
 pub use cosmrs;
+pub use margined_neutron_std;
 
 pub use module::*;
 pub use runner::app::NeutronTestApp;

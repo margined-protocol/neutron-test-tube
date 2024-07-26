@@ -3,7 +3,6 @@ package main
 import "C"
 
 import (
-	// std
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
@@ -67,8 +66,6 @@ func InitTestEnv() uint64 { // Temp fix for concurrency issue
 	env.Ctx = newCtx
 
 	reqFinalizeBlock := abci.RequestFinalizeBlock{Height: env.Ctx.BlockHeight(), Txs: [][]byte{}, Time: newBlockTime}
-
-	// env.Ctx = env.App.NewContext(false)
 
 	env.App.FinalizeBlock(&reqFinalizeBlock)
 	env.App.Commit()
@@ -136,7 +133,6 @@ func IncreaseTime(envId uint64, seconds uint64) {
 //export FinalizeBlock
 func FinalizeBlock(envId uint64, base64ReqDeliverTx string) *C.char {
 	return internalFinalizeBlock(envId, base64ReqDeliverTx, 3)
-
 }
 
 func internalFinalizeBlock(envId uint64, base64ReqDeliverTx string, seconds uint64) *C.char {
