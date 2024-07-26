@@ -40,6 +40,7 @@ pub trait Runner<'a> {
     where
         R: ::prost::Message + Default;
 
+    #[allow(deprecated)]
     fn execute_cosmos_msgs<S>(
         &self,
         msgs: &[CosmosMsg],

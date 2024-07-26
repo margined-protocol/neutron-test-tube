@@ -15,7 +15,6 @@ cosmrs               = { version = "0.15.0", features = [ "cosmwasm", "rpc" ] }
 cosmwasm-std         = { version = "2.0.4", features = [ "abort", "cosmwasm_1_2", "cosmwasm_1_3", "cosmwasm_1_4", "iterator", "stargate" ] }
 hex                  = "0.4.2"
 cosmos-sdk-proto = { version = "0.20.0", default-features = false }
-#neutron-std = { version = "4.0.1" }
 neutron-sdk = { package = "neutron-sdk", git = "https://github.com/neutron-org/neutron-sdk", branch = "chore/update-prost" }
 prost                = "0.12.4"
 serde                = "1.0.144"
