@@ -72,7 +72,7 @@ impl BaseApp {
     /// Get the first validator private key
     pub fn get_first_validator_private_key(&self) -> RunnerResult<String> {
         let pkey = unsafe {
-            let pkey = GetValidatorPrivateKey(self.id);
+            let pkey = GetValidatorPrivateKey(self.id, 0);
             CString::from_raw(pkey)
         }
         .to_str()
@@ -89,7 +89,7 @@ impl BaseApp {
         gas_adjustment: f64,
     ) -> RunnerResult<SigningAccount> {
         let pkey = unsafe {
-            let pkey = GetValidatorPrivateKey(self.id);
+            let pkey = GetValidatorPrivateKey(self.id, 0);
             CString::from_raw(pkey)
         }
         .to_str()
@@ -138,7 +138,6 @@ impl BaseApp {
         redefine_as_go_string!(empty_tx);
 
         let base64_priv = unsafe {
-            // BeginBlock(self.id);
             let addr = InitAccount(self.id, coins_json);
             FinalizeBlock(self.id, empty_tx);
             CString::from_raw(addr)
@@ -166,7 +165,7 @@ impl BaseApp {
         ))
     }
 
-    /// Convinience function to create multiple accounts with the same
+    /// Convenience function to create multiple accounts with the same
     /// Initial coins balance
     pub fn init_accounts(&self, coins: &[Coin], count: u64) -> RunnerResult<Vec<SigningAccount>> {
         (0..count).map(|_| self.init_account(coins)).collect()
@@ -341,16 +340,10 @@ impl<'a> Runner<'a> for BaseApp {
             let base64_tx_bytes = BASE64_STANDARD.encode(tx);
 
             redefine_as_go_string!(base64_tx_bytes);
-            // let mut buf = Vec::new();
-            // RequestDeliverTx::encode(&RequestDeliverTx { tx: tx.into() }, &mut buf)
-            //     .map_err(EncodeError::ProtoEncodeError)?;
-
-            // let base64_req = BASE64_STANDARD.encode(buf);
 
             let res = FinalizeBlock(self.id, base64_tx_bytes);
             let res = RawResult::from_non_null_ptr(res).into_result()?;
 
-            // NOTE: this returns bullshit atm
             let res = ResponseFinalizeBlock::decode(res.as_slice())
                 .unwrap()
                 .try_into();

@@ -13,9 +13,6 @@ use std::str::Utf8Error;
 pub type RunnerResult<T> = Result<T, RunnerError>;
 pub type RunnerExecuteResult<R> = Result<ExecuteResponse<R>, RunnerError>;
 
-// NOTE: as mentioned below this will
-// need refinement in the future if multiple
-// transactions are supported.
 #[derive(Debug, Clone, PartialEq)]
 pub struct ExecuteResponse<R>
 where
@@ -133,21 +130,25 @@ where
     type Error = RunnerError;
 
     fn try_from(res: ResponseFinalizeBlock) -> Result<Self, Self::Error> {
-        // NOTE: this can actually return multiple transaction events,
-        // we return all concat but in the future it MAY be better to
-        // return them separately in a Vec
-        let tx = res.tx_results.first().ok_or(RunnerError::ExecuteError {
-            msg: "No tx results".to_string(),
-        })?;
+        // NOTE: this actually returns multiple transactions
+        let tx = res
+            .tx_results
+            .first()
+            .or_else(|| res.tx_results.get(1))
+            .ok_or(RunnerError::ExecuteError {
+                msg: "No tx results".to_string(),
+            })?;
 
         let tx_msg_data =
             TxMsgData::decode(tx.data.as_ref()).map_err(DecodeError::ProtoDecodeError)?;
 
         let msg_data = tx_msg_data
             .msg_responses
-            // since this tx contains exactly 1 msg
-            // when getting none of them, that means error
-            .first()
+            // NOTE: we ignore the first as it seems to be
+            // the gas spend transaction as mentioned above
+            // this needs some thought for supporting more than
+            // one transaction per block
+            .get(0)
             .ok_or(RunnerError::ExecuteError {
                 msg: tx.log.clone(),
             })?;
