@@ -1,4 +1,4 @@
-use neutron_std::types::cosmos::authz::v1beta1::{
+use cosmos_sdk_proto::cosmos::authz::v1beta1::{
     MsgExec, MsgExecResponse, MsgGrant, MsgGrantResponse, QueryGranteeGrantsRequest,
     QueryGranteeGrantsResponse, QueryGranterGrantsRequest, QueryGranterGrantsResponse,
     QueryGrantsRequest, QueryGrantsResponse,
@@ -46,8 +46,8 @@ where
 #[cfg(test)]
 mod tests {
     use cosmwasm_std::Coin;
-    use neutron_std::shim::Any;
-    use neutron_std::types::{
+    use cosmos_sdk_proto::Any;
+    use cosmos_sdk_proto::{
         cosmos::authz::v1beta1::{
             GenericAuthorization, Grant, GrantAuthorization, MsgExec, MsgGrant,
             QueryGranteeGrantsRequest, QueryGranterGrantsRequest,
@@ -90,7 +90,7 @@ mod tests {
                     amount: 10u128.to_string(),
                     denom: "usdc".to_string(),
                 }],
-                allow_list: vec![],
+                // allow_list: vec![],
             },
             &mut buf,
         )

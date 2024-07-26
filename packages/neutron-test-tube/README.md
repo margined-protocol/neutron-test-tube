@@ -252,7 +252,7 @@ Let's try to interact with `Exchange` module:
 ```rust
 use cosmwasm_std::Coin;
 use neutron_std::shim::Any;
-use neutron_std::types::{
+use neutron_sdk::proto_types::{
     cosmos::bank::v1beta1::{MsgSend, QueryBalanceRequest, SendAuthorization},
     cosmos::base::v1beta1::Coin as BaseCoin,
     neutron::dex as DexTypes,
