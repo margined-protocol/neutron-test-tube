@@ -6,6 +6,8 @@ mod wasm;
 mod contractmanager;
 mod cron;
 mod dynamicfees;
+mod oracle;
+mod marketmap;
 
 pub use test_tube_ntrn::macros;
 pub use test_tube_ntrn::module::Module;
