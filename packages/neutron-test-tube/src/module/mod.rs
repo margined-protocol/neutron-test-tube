@@ -3,6 +3,9 @@ mod bank;
 mod dex;
 mod tokenfactory;
 mod wasm;
+mod contractmanager;
+mod cron;
+mod dynamicfees;
 
 pub use test_tube_ntrn::macros;
 pub use test_tube_ntrn::module::Module;
