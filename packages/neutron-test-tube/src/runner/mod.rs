@@ -148,14 +148,10 @@ mod tests {
 
         // Stargate
         let denom = "test".to_string();
-        #[allow(deprecated)]
-        let create_denom_msg: CosmosMsg = CosmosMsg::Stargate {
-            type_url: "/osmosis.tokenfactory.v1beta1.MsgCreateDenom".to_string(),
-            value: Binary::from(MsgCreateDenom {
-                sender: signer.address(),
-                subdenom: denom.clone(),
-            }.encode_to_vec()),
-        };
+        let create_denom_msg: CosmosMsg = MsgCreateDenom {
+            sender: signer.address(),
+            subdenom: denom.clone(),
+        }.into();
         let create_denom_res = app
             .execute_cosmos_msgs::<MsgCreateDenomResponse>(&[create_denom_msg], &signer)
             .unwrap();

@@ -1,4 +1,4 @@
-use neutron_sdk::proto_types::neutron::contractmanager::{QueryParamsRequest, QueryParamsResponse, QueryFailuresRequest, QueryFailuresResponse, MsgUpdateParams, MsgUpdateParamsResponse};
+use neutron_sdk::proto_types::neutron::contractmanager::{QueryParamsRequest, QueryParamsResponse, MsgUpdateParams, MsgUpdateParamsResponse};
 use test_tube_ntrn::{fn_execute, fn_query};
 
 use test_tube_ntrn::module::Module;

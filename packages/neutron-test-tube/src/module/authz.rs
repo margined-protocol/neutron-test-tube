@@ -90,7 +90,6 @@ mod tests {
                     amount: 10u128.to_string(),
                     denom: "usdc".to_string(),
                 }],
-                // allow_list: vec![],
             },
             &mut buf,
         )

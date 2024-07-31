@@ -55,7 +55,7 @@ where
     }
 
     fn_query! {
-        pub limit_order_tranche_user_all_by_address ["/neutron.dex.Query/LimitOrderTrancheUserAllByAddress"]: DexTypes::QueryAllUserLimitOrdersRequest => DexTypes::QueryAllUserLimitOrdersResponse
+        pub limit_order_tranche_user_all_by_address ["/neutron.dex.Query/LimitOrderTrancheUserAllByAddress"]: DexTypes::QueryAllLimitOrderTrancheUserByAddressRequest => DexTypes::QueryAllLimitOrderTrancheUserByAddressResponse
     }
 
     fn_query! {
