@@ -28,8 +28,8 @@ let app = NeutronTestApp::new();
 let accs = app
     .init_accounts(
         &[
-            Coin::new(1_000_000_000_000, "usdt"),
-            Coin::new(1_000_000_000_000, "untrn"),
+            Coin::new(1_000_000_000_000u128, "usdt"),
+            Coin::new(1_000_000_000_000u128, "untrn"),
         ],
         2,
     )
@@ -52,8 +52,8 @@ use neutron_test_tube::NeutronTestApp;
 let app = NeutronTestApp::new();
 
 let account = app.init_account(&[
-    Coin::new(1_000_000_000_000, "usdt"),
-    Coin::new(1_000_000_000_000, "untrn"),
+    Coin::new(1_000_000_000_000u128, "usdt"),
+    Coin::new(1_000_000_000_000u128, "untrn"),
 ]);
 ```
 
@@ -74,8 +74,8 @@ let app = NeutronTestApp::new();
 let accs = app
     .init_accounts(
         &[
-            Coin::new(1_000_000_000_000, "usdt"),
-            Coin::new(1_000_000_000_000, "untrn"),
+            Coin::new(1_000_000_000_000u128, "usdt"),
+            Coin::new(1_000_000_000_000u128, "untrn"),
         ],
         2,
     )
@@ -110,8 +110,8 @@ let app = NeutronTestApp::new();
 let accs = app
     .init_accounts(
         &[
-            Coin::new(1_000_000_000_000, "usdt"),
-            Coin::new(1_000_000_000_000, "untrn"),
+            Coin::new(1_000_000_000_000u128, "usdt"),
+            Coin::new(1_000_000_000_000u128, "untrn"),
         ],
         2,
     )
@@ -169,8 +169,8 @@ let app = NeutronTestApp::new();
 let accs = app
     .init_accounts(
         &[
-            Coin::new(1_000_000_000_000, "usdt"),
-            Coin::new(1_000_000_000_000, "untrn"),
+            Coin::new(1_000_000_000_000u128, "usdt"),
+            Coin::new(1_000_000_000_000u128, "untrn"),
         ],
         2,
     )

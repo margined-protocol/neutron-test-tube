@@ -142,7 +142,7 @@ mod tests {
                 receiver: signer.address().clone(),
                 token_in: "untrn".to_string(),
                 token_out: "usdc".to_string(),
-                tick_index_in_to_out: 0,
+                tick_index_in_to_out: _,
                 amount_in: 1_000_000_000_000_000_000u128.to_string(),
                 order_type: 0,
                 expiration_time: None,

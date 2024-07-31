@@ -107,7 +107,7 @@ mod tests {
 
         // TODO mint new denom
         let coin: margined_neutron_std::types::cosmos::base::v1beta1::Coin =
-            Coin::new(1000000000, denom.clone()).into();
+            Coin::new(1_000_000_000u128, denom.clone()).into();
         tokenfactory
             .mint(
                 MsgMint {

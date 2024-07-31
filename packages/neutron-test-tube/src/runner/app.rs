@@ -304,8 +304,8 @@ mod tests {
         let accs = app
             .init_accounts(
                 &[
-                    Coin::new(1_000_000_000_000, "uatom"),
-                    Coin::new(1_000_000_000_000, "untrn"),
+                    Coin::new(1_000_000_000_000u128, "uatom"),
+                    Coin::new(1_000_000_000_000u128, "untrn"),
                 ],
                 2,
             )
