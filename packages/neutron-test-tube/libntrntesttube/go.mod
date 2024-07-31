@@ -10,7 +10,7 @@ require (
 	github.com/cosmos/cosmos-db v1.0.2
 	github.com/cosmos/cosmos-sdk v0.50.7
 	github.com/cosmos/gogoproto v1.5.0
-	github.com/neutron-org/neutron/v4 v4.0.1
+	github.com/neutron-org/neutron/v4 v4.1.0
 	github.com/pkg/errors v0.9.1
 )
 
