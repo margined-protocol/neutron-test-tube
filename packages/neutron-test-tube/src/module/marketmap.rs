@@ -18,15 +18,15 @@ where
     R: Runner<'a>,
 {
     fn_execute! {
-        pub create_markets: MsgCreateMarkets["/slinky.marketmap.v1.Msg/CreateMarkets"] => MsgCreateMarketsResponse
+        pub create_markets: MsgCreateMarkets["/slinky.marketmap.v1.MsgCreateMarkets"] => MsgCreateMarketsResponse
     }
 
     fn_execute! {
-        pub update_markets: MsgUpdateMarkets["/slinky.marketmap.v1.Msg/UpdateMarkets"] => MsgUpdateMarketsResponse
+        pub update_markets: MsgUpdateMarkets["/slinky.marketmap.v1.MsgUpdateMarkets"] => MsgUpdateMarketsResponse
     }
 
     fn_execute! {
-        pub remove_market_authorities: MsgRemoveMarketAuthorities["/slinky.marketmap.v1.Msg/RemoveMarketAuthorities"] => MsgRemoveMarketAuthoritiesResponse
+        pub remove_market_authorities: MsgRemoveMarketAuthorities["/slinky.marketmap.v1.MsgRemoveMarketAuthorities"] => MsgRemoveMarketAuthoritiesResponse
     }
 
     fn_query! {

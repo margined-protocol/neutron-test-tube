@@ -17,3 +17,5 @@ pub use bank::Bank;
 pub use dex::Dex;
 pub use tokenfactory::TokenFactory;
 pub use wasm::Wasm;
+pub use oracle::Oracle;
+pub use marketmap::Marketmap;
