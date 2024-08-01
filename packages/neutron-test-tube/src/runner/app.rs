@@ -14,7 +14,7 @@ const DEFAULT_GAS_ADJUSTMENT: f64 = 1.2;
 
 #[derive(Debug, PartialEq)]
 pub struct NeutronTestApp {
-    inner: BaseApp,
+    pub inner: BaseApp,
 }
 
 impl Default for NeutronTestApp {
@@ -84,6 +84,19 @@ impl NeutronTestApp {
     /// Initial coins balance
     pub fn init_accounts(&self, coins: &[Coin], count: u64) -> RunnerResult<Vec<SigningAccount>> {
         self.inner.init_accounts(coins, count)
+    }
+
+    /// Function to set price for currency pairs as they're not updated automatically here
+    pub fn set_price_for_currency_pair(
+        &self,
+        base: &str,
+        quote: &str,
+        price: i64,
+        block_time_seconds: i64,
+        block_height: i64,
+    ) {
+        self.inner
+            .set_price_for_currency_pair(base, quote, price, block_time_seconds, block_height)
     }
 
     /// Simulate transaction execution and return gas info

@@ -262,3 +262,13 @@ extern "C" {
 extern "C" {
     pub fn GetBlockHeight(envId: GoUint64) -> GoInt64;
 }
+extern "C" {
+    pub fn SetPriceForCurrencyPair(
+        envId: GoUint64,
+        base: GoString,
+        quote: GoString,
+        price: GoInt64,
+        blockTimestampSecs: GoInt64,
+        blockHeight: GoInt64,
+    ) -> *mut ::std::os::raw::c_char;
+}

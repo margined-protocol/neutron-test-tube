@@ -1,6 +1,5 @@
-use neutron_sdk::proto_types::neutron::contractmanager::{QueryParamsRequest, QueryParamsResponse, MsgUpdateParams, MsgUpdateParamsResponse};
-use test_tube_ntrn::{fn_execute, fn_query};
-
+use neutron_sdk::proto_types::neutron::contractmanager::{QueryParamsRequest, QueryParamsResponse};
+use test_tube_ntrn::fn_query;
 use test_tube_ntrn::module::Module;
 use test_tube_ntrn::runner::Runner;
 
@@ -18,13 +17,7 @@ impl<'a, R> Contractmanager<'a, R>
 where
     R: Runner<'a>,
 {
-    fn_execute! {
-        pub update_params: MsgUpdateParams["/neutron.contractmanager.Msg/UpdateParams"] => MsgUpdateParamsResponse
-    }
-
     fn_query! {
         pub query_params ["/neutron.contractmanager.Query/Params"]: QueryParamsRequest => QueryParamsResponse
     }
 }
-
-// TODO: tests

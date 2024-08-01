@@ -59,8 +59,8 @@ where
 
 #[cfg(test)]
 mod tests {
-    use cosmwasm_std::{Coin, Uint128};
     use cosmos_sdk_proto::cosmos::bank::v1beta1::QueryBalanceRequest;
+    use cosmwasm_std::{Coin, Uint128};
     use neutron_sdk::proto_types::osmosis::tokenfactory::v1beta1::{
         MsgBurn, MsgCreateDenom, MsgMint, QueryDenomsFromCreatorRequest,
     };
@@ -72,7 +72,10 @@ mod tests {
     fn tokenfactory_integration() {
         let app = NeutronTestApp::new();
         let signer = app
-            .init_account(&[Coin{ denom: "untrn".to_string(), amount: Uint128::new(100_000_000_000_000_000_000) } ])
+            .init_account(&[Coin {
+                denom: "untrn".to_string(),
+                amount: Uint128::new(100_000_000_000_000_000_000),
+            }])
             .unwrap();
         let tokenfactory = TokenFactory::new(&app);
         let bank = Bank::new(&app);
@@ -106,7 +109,10 @@ mod tests {
         assert_eq!(denoms, [denom.clone()]);
         // TODO mint new denom
         let coin: neutron_sdk::proto_types::cosmos::base::v1beta1::Coin =
-            neutron_sdk::proto_types::cosmos::base::v1beta1::Coin { amount: Uint128::new(1000000000).to_string(), denom: denom.clone() };
+            neutron_sdk::proto_types::cosmos::base::v1beta1::Coin {
+                amount: Uint128::new(1000000000).to_string(),
+                denom: denom.clone(),
+            };
         tokenfactory
             .mint(
                 MsgMint {

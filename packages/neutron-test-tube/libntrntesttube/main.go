@@ -3,7 +3,7 @@ package main
 import "C"
 
 import (
-	// std
+	sdkmath "cosmossdk.io/math"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
@@ -12,6 +12,7 @@ import (
 	"time"
 
 	abci "github.com/cometbft/cometbft/abci/types"
+// 	adminmoduletypes "github.com/cosmos/admin-module/v2/x/adminmodule/types"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -19,7 +20,10 @@ import (
 	"github.com/cosmos/gogoproto/proto"
 	"github.com/neutron-org/neutron-test-tube/neutron-test-tube/result"
 	"github.com/neutron-org/neutron-test-tube/neutron-test-tube/testenv"
+// 	dexmoduletypes "github.com/neutron-org/neutron/v4/x/dex/types"
 	"github.com/pkg/errors"
+	slinkytypes "github.com/skip-mev/slinky/pkg/types"
+	oracletypes "github.com/skip-mev/slinky/x/oracle/types"
 
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 )
@@ -69,6 +73,23 @@ func InitTestEnv() uint64 { // Temp fix for concurrency issue
 	reqFinalizeBlock := abci.RequestFinalizeBlock{Height: env.Ctx.BlockHeight(), Txs: [][]byte{}, Time: newBlockTime}
 
 	// env.Ctx = env.App.NewContext(false)
+
+// 	coin := sdk.NewCoin("untrn", sdkmath.NewInt(1))
+	//adminModuleAcc, err := sdk.AccAddressFromBech32("neutron1hxskfdxpp5hqgtjj6am6nkjefhfzj359x0ar3z")
+	//if err != nil {
+	//	panic(err)
+	//}
+	//err = env.FundAccount(env.Ctx, env.App.BankKeeper, adminModuleAcc, )
+	//if err != nil {
+	//	panic(errors.Wrapf(err, "Failed to fund account"))
+	//}
+
+// 	err = env.App.BankKeeper.SendCoinsFromModuleToModule(env.Ctx, dexmoduletypes.ModuleName, adminmoduletypes.ModuleName, sdk.Coins{coin})
+// 	if err != nil {
+// 		panic(errors.Wrapf(err, "Failed to fund admin module"))
+// 	}
+
+//     env.App.OracleKeeper
 
 	env.App.FinalizeBlock(&reqFinalizeBlock)
 	env.App.Commit()
@@ -136,7 +157,6 @@ func IncreaseTime(envId uint64, seconds uint64) {
 //export FinalizeBlock
 func FinalizeBlock(envId uint64, base64ReqDeliverTx string) *C.char {
 	return internalFinalizeBlock(envId, base64ReqDeliverTx, 3)
-
 }
 
 func internalFinalizeBlock(envId uint64, base64ReqDeliverTx string, seconds uint64) *C.char {
@@ -379,6 +399,26 @@ func GetValidatorPrivateKey(envId uint64) *C.char {
 	base64Priv := base64.StdEncoding.EncodeToString(priv)
 
 	return C.CString(base64Priv)
+}
+
+//export SetPriceForCurrencyPair
+func SetPriceForCurrencyPair(envId uint64, base, quote string, price int64, blockTimestampSecs int64, blockHeight int64) *C.char {
+	env := loadEnv(envId)
+
+	env.App.OracleKeeper.SetPriceForCurrencyPair(
+		env.Ctx,
+		slinkytypes.CurrencyPair{
+			Base:  base,
+			Quote: quote,
+		},
+		oracletypes.QuotePrice{
+			Price:          sdkmath.NewInt(price),
+			BlockTimestamp: time.Unix(blockTimestampSecs, 0),
+			BlockHeight:    uint64(blockHeight),
+		},
+	)
+
+	return C.CString("")
 }
 
 // ========= utils =========

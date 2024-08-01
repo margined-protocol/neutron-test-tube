@@ -1,5 +1,8 @@
-use neutron_sdk::proto_types::slinky::marketmap::v1::{LastUpdatedRequest, LastUpdatedResponse, MarketMapRequest, MarketMapResponse, MarketRequest, MarketResponse, MsgCreateMarkets, MsgCreateMarketsResponse, MsgUpdateMarkets, MsgUpdateMarketsResponse, ParamsRequest, ParamsResponse, MsgRemoveMarketAuthorities, MsgRemoveMarketAuthoritiesResponse};
-use test_tube_ntrn::{fn_execute, fn_query};
+use neutron_sdk::proto_types::slinky::marketmap::v1::{
+    LastUpdatedRequest, LastUpdatedResponse, MarketMapRequest, MarketMapResponse, MarketRequest,
+    MarketResponse, ParamsRequest, ParamsResponse,
+};
+use test_tube_ntrn::fn_query;
 use test_tube_ntrn::module::Module;
 use test_tube_ntrn::runner::Runner;
 
@@ -17,17 +20,17 @@ impl<'a, R> Marketmap<'a, R>
 where
     R: Runner<'a>,
 {
-    fn_execute! {
-        pub create_markets: MsgCreateMarkets["/slinky.marketmap.v1.MsgCreateMarkets"] => MsgCreateMarketsResponse
-    }
-
-    fn_execute! {
-        pub update_markets: MsgUpdateMarkets["/slinky.marketmap.v1.MsgUpdateMarkets"] => MsgUpdateMarketsResponse
-    }
-
-    fn_execute! {
-        pub remove_market_authorities: MsgRemoveMarketAuthorities["/slinky.marketmap.v1.MsgRemoveMarketAuthorities"] => MsgRemoveMarketAuthoritiesResponse
-    }
+    // fn_execute! {
+    //     pub create_markets: MsgCreateMarkets["/slinky.marketmap.v1.MsgCreateMarkets"] => MsgCreateMarketsResponse
+    // }
+    //
+    // fn_execute! {
+    //     pub update_markets: MsgUpdateMarkets["/slinky.marketmap.v1.MsgUpdateMarkets"] => MsgUpdateMarketsResponse
+    // }
+    //
+    // fn_execute! {
+    //     pub remove_market_authorities: MsgRemoveMarketAuthorities["/slinky.marketmap.v1.MsgRemoveMarketAuthorities"] => MsgRemoveMarketAuthoritiesResponse
+    // }
 
     fn_query! {
         pub market_map ["/slinky.marketmap.v1.Query/MarketMap"]: MarketMapRequest => MarketMapResponse
@@ -45,5 +48,3 @@ where
         pub params ["/slinky.marketmap.v1.Query/Params"]: ParamsRequest => ParamsResponse
     }
 }
-
-// TODO: tests

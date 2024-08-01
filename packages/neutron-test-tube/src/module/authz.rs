@@ -45,7 +45,6 @@ where
 
 #[cfg(test)]
 mod tests {
-    use cosmwasm_std::Coin;
     use cosmos_sdk_proto::Any;
     use cosmos_sdk_proto::{
         cosmos::authz::v1beta1::{
@@ -55,6 +54,7 @@ mod tests {
         cosmos::bank::v1beta1::{MsgSend, QueryBalanceRequest, SendAuthorization},
         cosmos::base::v1beta1::Coin as BaseCoin,
     };
+    use cosmwasm_std::Coin;
     use prost::Message;
 
     use crate::{Account, Authz, Bank, NeutronTestApp};

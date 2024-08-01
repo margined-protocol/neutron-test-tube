@@ -8,17 +8,16 @@ mod tests {
     use super::app::NeutronTestApp;
     use base64::prelude::BASE64_STANDARD;
     use base64::Engine;
-    use cosmwasm_std::{to_json_binary, BankMsg, Coin, CosmosMsg, Empty, Event, WasmMsg, Binary};
-    use cw1_whitelist::msg::{ExecuteMsg, InstantiateMsg};
-    use neutron_sdk::proto_types::osmosis::tokenfactory::v1beta1::{
-        MsgCreateDenom, MsgCreateDenomResponse,
-    };
     use cosmos_sdk_proto::{
         cosmos::bank::v1beta1::{MsgSendResponse, QueryBalanceRequest},
         cosmwasm::wasm::v1::{MsgExecuteContractResponse, MsgInstantiateContractResponse},
     };
+    use cosmwasm_std::{to_json_binary, BankMsg, Coin, CosmosMsg, Empty, Event, WasmMsg};
+    use cw1_whitelist::msg::{ExecuteMsg, InstantiateMsg};
+    use neutron_sdk::proto_types::osmosis::tokenfactory::v1beta1::{
+        MsgCreateDenom, MsgCreateDenomResponse,
+    };
     use std::ffi::CString;
-    use prost::Message;
     use test_tube_ntrn::account::Account;
     use test_tube_ntrn::runner::error::RunnerError::QueryError;
     use test_tube_ntrn::runner::result::RawResult;
@@ -151,7 +150,8 @@ mod tests {
         let create_denom_msg: CosmosMsg = MsgCreateDenom {
             sender: signer.address(),
             subdenom: denom.clone(),
-        }.into();
+        }
+        .into();
         let create_denom_res = app
             .execute_cosmos_msgs::<MsgCreateDenomResponse>(&[create_denom_msg], &signer)
             .unwrap();
