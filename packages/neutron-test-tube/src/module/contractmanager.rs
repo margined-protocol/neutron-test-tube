@@ -3,6 +3,7 @@ use test_tube_ntrn::fn_query;
 use test_tube_ntrn::module::Module;
 use test_tube_ntrn::runner::Runner;
 
+#[allow(dead_code)]
 pub struct Contractmanager<'a, R: Runner<'a>> {
     runner: &'a R,
 }
