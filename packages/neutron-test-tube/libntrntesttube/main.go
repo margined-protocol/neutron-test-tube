@@ -12,7 +12,6 @@ import (
 	"time"
 
 	abci "github.com/cometbft/cometbft/abci/types"
-// 	adminmoduletypes "github.com/cosmos/admin-module/v2/x/adminmodule/types"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -20,7 +19,6 @@ import (
 	"github.com/cosmos/gogoproto/proto"
 	"github.com/neutron-org/neutron-test-tube/neutron-test-tube/result"
 	"github.com/neutron-org/neutron-test-tube/neutron-test-tube/testenv"
-// 	dexmoduletypes "github.com/neutron-org/neutron/v4/x/dex/types"
 	"github.com/pkg/errors"
 	slinkytypes "github.com/skip-mev/slinky/pkg/types"
 	oracletypes "github.com/skip-mev/slinky/x/oracle/types"
@@ -71,25 +69,6 @@ func InitTestEnv() uint64 { // Temp fix for concurrency issue
 	env.Ctx = newCtx
 
 	reqFinalizeBlock := abci.RequestFinalizeBlock{Height: env.Ctx.BlockHeight(), Txs: [][]byte{}, Time: newBlockTime}
-
-	// env.Ctx = env.App.NewContext(false)
-
-// 	coin := sdk.NewCoin("untrn", sdkmath.NewInt(1))
-	//adminModuleAcc, err := sdk.AccAddressFromBech32("neutron1hxskfdxpp5hqgtjj6am6nkjefhfzj359x0ar3z")
-	//if err != nil {
-	//	panic(err)
-	//}
-	//err = env.FundAccount(env.Ctx, env.App.BankKeeper, adminModuleAcc, )
-	//if err != nil {
-	//	panic(errors.Wrapf(err, "Failed to fund account"))
-	//}
-
-// 	err = env.App.BankKeeper.SendCoinsFromModuleToModule(env.Ctx, dexmoduletypes.ModuleName, adminmoduletypes.ModuleName, sdk.Coins{coin})
-// 	if err != nil {
-// 		panic(errors.Wrapf(err, "Failed to fund admin module"))
-// 	}
-
-//     env.App.OracleKeeper
 
 	env.App.FinalizeBlock(&reqFinalizeBlock)
 	env.App.Commit()

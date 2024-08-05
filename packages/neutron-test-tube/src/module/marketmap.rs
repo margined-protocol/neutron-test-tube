@@ -20,6 +20,8 @@ impl<'a, R> Marketmap<'a, R>
 where
     R: Runner<'a>,
 {
+    // NOTE: commented out admin only methods that cannot be called directly
+
     // fn_execute! {
     //     pub create_markets: MsgCreateMarkets["/slinky.marketmap.v1.MsgCreateMarkets"] => MsgCreateMarketsResponse
     // }
