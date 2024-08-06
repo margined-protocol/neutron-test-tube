@@ -111,8 +111,8 @@ func InitChain(appInstance *app.App) (sdk.Context, secp256k1.PrivKey) {
 
 	requireNoErr(err)
 
-	concensusParams := simtestutil.DefaultConsensusParams
-	concensusParams.Block = &tmproto.BlockParams{
+	consensusParams := simtestutil.DefaultConsensusParams
+	consensusParams.Block = &tmproto.BlockParams{
 		MaxBytes: 22020096,
 		MaxGas:   -1,
 	}
@@ -123,7 +123,7 @@ func InitChain(appInstance *app.App) (sdk.Context, secp256k1.PrivKey) {
 	appInstance.InitChain(
 		&abci.RequestInitChain{
 			Validators:      []abci.ValidatorUpdate{},
-			ConsensusParams: concensusParams,
+			ConsensusParams: consensusParams,
 			AppStateBytes:   stateBytes,
 			ChainId:         "neutron-666",
 		},
@@ -249,16 +249,6 @@ func (env *TestEnv) BeginNewBlock(executeNextEpoch bool, timeIncreaseSeconds uin
 	env.Ctx = env.App.NewContext(false)
 }
 
-// func (env *TestEnv) GetValidatorAddresses() []string {
-// 	validators := env.App.StakingKeeper.GetAllValidators(env.Ctx)
-// 	var addresses []string
-// 	for _, validator := range validators {
-// 		addresses = append(addresses, validator.OperatorAddress)
-// 	}
-
-// 	return addresses
-// }
-
 func (env *TestEnv) GetValidatorPrivateKey() []byte {
 	return env.Validator
 }
@@ -279,7 +269,6 @@ func (env *TestEnv) FundAccount(ctx sdk.Context, bankKeeper bankkeeper.Keeper, a
 	if err := bankKeeper.MintCoins(ctx, dexmoduletypes.ModuleName, amounts); err != nil {
 		return err
 	}
-
 	return bankKeeper.SendCoinsFromModuleToAccount(ctx, dexmoduletypes.ModuleName, addr, amounts)
 }
 

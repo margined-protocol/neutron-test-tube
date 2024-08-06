@@ -31,8 +31,8 @@ let app = NeutronTestApp::new();
 let accs = app
     .init_accounts(
         &[
-            Coin::new(1_000_000_000_000, "usdt"),
-            Coin::new(1_000_000_000_000, "untrn"),
+            Coin::new(1_000_000_000_000u128, "usdt"),
+            Coin::new(1_000_000_000_000u128, "untrn"),
         ],
         2,
     )
@@ -55,8 +55,8 @@ use neutron_test_tube::NeutronTestApp;
 let app = NeutronTestApp::new();
 
 let account = app.init_account(&[
-    Coin::new(1_000_000_000_000, "usdt"),
-    Coin::new(1_000_000_000_000, "untrn"),
+    Coin::new(1_000_000_000_000u128, "usdt"),
+    Coin::new(1_000_000_000_000u128, "untrn"),
 ]);
 ```
 
@@ -77,8 +77,8 @@ let app = NeutronTestApp::new();
 let accs = app
     .init_accounts(
         &[
-            Coin::new(1_000_000_000_000, "usdt"),
-            Coin::new(1_000_000_000_000, "untrn"),
+            Coin::new(1_000_000_000_000u128, "usdt"),
+            Coin::new(1_000_000_000_000u128, "untrn"),
         ],
         2,
     )
@@ -113,8 +113,8 @@ let app = NeutronTestApp::new();
 let accs = app
     .init_accounts(
         &[
-            Coin::new(1_000_000_000_000, "usdt"),
-            Coin::new(1_000_000_000_000, "untrn"),
+            Coin::new(1_000_000_000_000u128, "usdt"),
+            Coin::new(1_000_000_000_000u128, "untrn"),
         ],
         2,
     )
@@ -172,8 +172,8 @@ let app = NeutronTestApp::new();
 let accs = app
     .init_accounts(
         &[
-            Coin::new(1_000_000_000_000, "usdt"),
-            Coin::new(1_000_000_000_000, "untrn"),
+            Coin::new(1_000_000_000_000u128, "usdt"),
+            Coin::new(1_000_000_000_000u128, "untrn"),
         ],
         2,
     )
@@ -250,13 +250,14 @@ Module wrappers provides convenient functions to interact with the appchain's mo
 Let's try to interact with `Exchange` module:
 
 ```rust
+#[allow(deprecated)]
 use cosmwasm_std::Coin;
-use margined_neutron_std::shim::Any;
-use margined_neutron_std::types::{
+use cosmos_sdk_proto::Any;
+use cosmos_sdk_proto::{
     cosmos::bank::v1beta1::{MsgSend, QueryBalanceRequest, SendAuthorization},
     cosmos::base::v1beta1::Coin as BaseCoin,
-    neutron::dex as DexTypes,
 };
+use neutron_sdk::proto_types::neutron::dex as DexTypes;
 use prost::Message;
 
 use neutron_test_tube::{Account, Bank, Dex, NeutronTestApp};

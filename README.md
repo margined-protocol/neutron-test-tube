@@ -4,7 +4,7 @@
 
 This repo contains [`neutron-test-tube`] which uses a delta of [`osmosis-test-tube`](https://github.com/osmosis-labs/test-tube/tree/main/packages/osmosis-test-tube) to enable testing against `neutron`.
 
-Additionally, this repo contains [`test-tube-ntrn`](https://github.com/margined-protocol/test-tube/tree/main/packages/test-tube) the flavour of `test-tube` compatible with Neutron core chain.
+Additionally, this repo contains [`test-tube-ntrn`](https://github.com/neutron-org/neutron-test-tube/tree/main/packages/test-tube) the flavour of `test-tube` compatible with Neutron core chain.
 
 ## Features
 

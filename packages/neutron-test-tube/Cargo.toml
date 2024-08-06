@@ -3,7 +3,7 @@ description = "CosmWasm integration testing for Neutron"
 edition     = "2021"
 license     = "MIT OR Apache-2.0"
 name        = "neutron-test-tube"
-repository  = "https://github.com/margined-protocol/test-tube"
+repository  = "https://github.com/neutron-org/neutron-test-tube"
 version     = "4.0.1"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -12,19 +12,20 @@ exclude = [ "neutron", "test_artifacts" ]
 [dependencies]
 base64               = "0.21.5"
 cosmrs               = { version = "0.15.0", features = [ "cosmwasm", "rpc" ] }
-cosmwasm-std         = { version = "1.5.4", features = [ "abort", "cosmwasm_1_2", "cosmwasm_1_3", "cosmwasm_1_4", "iterator", "stargate" ] }
+cosmwasm-std         = { version = "2.0.4", features = [ "abort", "cosmwasm_1_2", "cosmwasm_1_3", "cosmwasm_1_4", "iterator", "stargate" ] }
 hex                  = "0.4.2"
-margined-neutron-std = { version = "4.0.1" }
+cosmos-sdk-proto = { version = "0.20.0", default-features = false }
+neutron-sdk = { package = "neutron-sdk", git = "https://github.com/neutron-org/neutron-sdk", branch = "feat/remove-stargate" }
 prost                = "0.12.4"
 serde                = "1.0.144"
 serde_json           = "1.0.85"
-test-tube-ntrn       = { version = "0.1.0" }
+test-tube-ntrn       = { path = "../test-tube" }
 thiserror            = "1.0.34"
 
 [build-dependencies]
 bindgen = "0.60.1"
 
 [dev-dependencies]
-cw1-subkeys   = "1.1.2"
-cw1-whitelist = "1.1.2"
+cw1-subkeys   = "2.0.0"
+cw1-whitelist = "2.0.0"
 rayon         = "1.5.3"

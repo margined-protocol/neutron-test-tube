@@ -1,4 +1,4 @@
-use margined_neutron_std::types::osmosis::tokenfactory::v1beta1::{
+use neutron_sdk::proto_types::osmosis::tokenfactory::v1beta1::{
     MsgBurn, MsgBurnResponse, MsgChangeAdmin, MsgChangeAdminResponse, MsgCreateDenom,
     MsgCreateDenomResponse, MsgMint, MsgMintResponse, MsgSetDenomMetadata,
     MsgSetDenomMetadataResponse, QueryDenomAuthorityMetadataRequest,
@@ -59,9 +59,9 @@ where
 
 #[cfg(test)]
 mod tests {
-    use cosmwasm_std::Coin;
-    use margined_neutron_std::types::cosmos::bank::v1beta1::QueryBalanceRequest;
-    use margined_neutron_std::types::osmosis::tokenfactory::v1beta1::{
+    use cosmos_sdk_proto::cosmos::bank::v1beta1::QueryBalanceRequest;
+    use cosmwasm_std::{Coin, Uint128};
+    use neutron_sdk::proto_types::osmosis::tokenfactory::v1beta1::{
         MsgBurn, MsgCreateDenom, MsgMint, QueryDenomsFromCreatorRequest,
     };
 
@@ -72,7 +72,10 @@ mod tests {
     fn tokenfactory_integration() {
         let app = NeutronTestApp::new();
         let signer = app
-            .init_account(&[Coin::new(100_000_000_000_000_000_000u128, "untrn")])
+            .init_account(&[Coin {
+                denom: "untrn".to_string(),
+                amount: Uint128::new(100_000_000_000_000_000_000),
+            }])
             .unwrap();
         let tokenfactory = TokenFactory::new(&app);
         let bank = Bank::new(&app);
@@ -104,10 +107,12 @@ mod tests {
             .denoms;
 
         assert_eq!(denoms, [denom.clone()]);
-
         // TODO mint new denom
-        let coin: margined_neutron_std::types::cosmos::base::v1beta1::Coin =
-            Coin::new(1000000000, denom.clone()).into();
+        let coin: neutron_sdk::proto_types::cosmos::base::v1beta1::Coin =
+            neutron_sdk::proto_types::cosmos::base::v1beta1::Coin {
+                amount: Uint128::new(1000000000).to_string(),
+                denom: denom.clone(),
+            };
         tokenfactory
             .mint(
                 MsgMint {

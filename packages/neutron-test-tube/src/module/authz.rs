@@ -1,4 +1,4 @@
-use margined_neutron_std::types::cosmos::authz::v1beta1::{
+use cosmos_sdk_proto::cosmos::authz::v1beta1::{
     MsgExec, MsgExecResponse, MsgGrant, MsgGrantResponse, QueryGranteeGrantsRequest,
     QueryGranteeGrantsResponse, QueryGranterGrantsRequest, QueryGranterGrantsResponse,
     QueryGrantsRequest, QueryGrantsResponse,
@@ -45,9 +45,8 @@ where
 
 #[cfg(test)]
 mod tests {
-    use cosmwasm_std::Coin;
-    use margined_neutron_std::shim::Any;
-    use margined_neutron_std::types::{
+    use cosmos_sdk_proto::Any;
+    use cosmos_sdk_proto::{
         cosmos::authz::v1beta1::{
             GenericAuthorization, Grant, GrantAuthorization, MsgExec, MsgGrant,
             QueryGranteeGrantsRequest, QueryGranterGrantsRequest,
@@ -55,6 +54,7 @@ mod tests {
         cosmos::bank::v1beta1::{MsgSend, QueryBalanceRequest, SendAuthorization},
         cosmos::base::v1beta1::Coin as BaseCoin,
     };
+    use cosmwasm_std::Coin;
     use prost::Message;
 
     use crate::{Account, Authz, Bank, NeutronTestApp};
@@ -90,7 +90,6 @@ mod tests {
                     amount: 10u128.to_string(),
                     denom: "usdc".to_string(),
                 }],
-                allow_list: vec![],
             },
             &mut buf,
         )

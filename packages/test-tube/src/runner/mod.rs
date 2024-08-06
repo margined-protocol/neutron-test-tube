@@ -40,6 +40,7 @@ pub trait Runner<'a> {
     where
         R: ::prost::Message + Default;
 
+    #[allow(deprecated)]
     fn execute_cosmos_msgs<S>(
         &self,
         msgs: &[CosmosMsg],
@@ -54,10 +55,20 @@ pub trait Runner<'a> {
                 CosmosMsg::Bank(msg) => bank_msg_to_any(msg, signer),
                 CosmosMsg::Stargate { type_url, value } => Ok(cosmrs::Any {
                     type_url: type_url.clone(),
-                    value: value.0.clone(),
+                    value: value.to_vec().clone(),
                 }),
                 CosmosMsg::Wasm(msg) => wasm_msg_to_any(msg, signer),
-                _ => todo!("unsupported cosmos msg variant"),
+                CosmosMsg::Any(msg) => Ok(cosmrs::Any {
+                    type_url: msg.type_url.to_owned(),
+                    value: msg.value.to_vec(),
+                }),
+                other => {
+                    println!(
+                        "{}",
+                        format!("unsupported cosmos msg variant: {:?}", *other)
+                    );
+                    unimplemented!("unsupported cosmos msg variant")
+                }
             })
             .collect::<Result<Vec<_>, RunnerError>>()?;
 

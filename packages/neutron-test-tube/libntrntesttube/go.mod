@@ -1,4 +1,4 @@
-module github.com/margined-protocol/test-tube/neutron-test-tube
+module github.com/neutron-org/neutron-test-tube/neutron-test-tube
 
 go 1.22.3
 
@@ -12,6 +12,7 @@ require (
 	github.com/cosmos/gogoproto v1.5.0
 	github.com/neutron-org/neutron/v4 v4.0.1
 	github.com/pkg/errors v0.9.1
+	github.com/skip-mev/slinky v1.0.3
 )
 
 require (
@@ -191,7 +192,6 @@ require (
 	github.com/shirou/gopsutil v3.21.4-0.20210419000835-c7a38de76ee5+incompatible // indirect
 	github.com/skip-mev/block-sdk/v2 v2.1.2 // indirect
 	github.com/skip-mev/feemarket v1.0.3 // indirect
-	github.com/skip-mev/slinky v1.0.3 // indirect
 	github.com/sourcegraph/conc v0.3.0 // indirect
 	github.com/spf13/afero v1.11.0 // indirect
 	github.com/spf13/cast v1.6.0 // indirect
