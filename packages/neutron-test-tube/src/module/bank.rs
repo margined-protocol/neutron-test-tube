@@ -40,9 +40,9 @@ where
 
 #[cfg(test)]
 mod tests {
-    use cosmwasm_std::Coin;
     use cosmos_sdk_proto::cosmos::bank::v1beta1::{MsgSend, QueryBalanceRequest};
     use cosmos_sdk_proto::cosmos::base::v1beta1::Coin as BaseCoin;
+    use cosmwasm_std::Coin;
 
     use crate::{Account, Bank, NeutronTestApp};
     use test_tube_ntrn::Module;

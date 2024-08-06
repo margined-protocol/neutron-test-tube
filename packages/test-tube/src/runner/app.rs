@@ -13,7 +13,7 @@ use crate::account::{Account, FeeSetting, SigningAccount};
 use crate::bindings::{
     AccountNumber, AccountSequence, FinalizeBlock, GetBlockHeight, GetBlockTime, GetParamSet,
     GetValidatorAddress, GetValidatorPrivateKey, IncreaseTime, InitAccount, InitTestEnv, Query,
-    Simulate,
+    SetPriceForCurrencyPair, Simulate,
 };
 use crate::redefine_as_go_string;
 use crate::runner::error::{DecodeError, EncodeError, RunnerError};
@@ -25,7 +25,7 @@ pub const NEUTRON_MIN_GAS_PRICE: u128 = 2_500;
 
 #[derive(Debug, PartialEq)]
 pub struct BaseApp {
-    id: u64,
+    pub id: u64,
     fee_denom: String,
     chain_id: String,
     address_prefix: String,
@@ -166,10 +166,33 @@ impl BaseApp {
         ))
     }
 
-    /// Convinience function to create multiple accounts with the same
+    /// Convenience function to create multiple accounts with the same
     /// Initial coins balance
     pub fn init_accounts(&self, coins: &[Coin], count: u64) -> RunnerResult<Vec<SigningAccount>> {
         (0..count).map(|_| self.init_account(coins)).collect()
+    }
+
+    /// Function to set price for currency pairs as they're not updated automatically here
+    pub fn set_price_for_currency_pair(
+        &self,
+        base: &str,
+        quote: &str,
+        price: i64,
+        block_time_seconds: i64,
+        block_height: i64,
+    ) {
+        redefine_as_go_string!(base);
+        redefine_as_go_string!(quote);
+        unsafe {
+            _ = SetPriceForCurrencyPair(
+                self.id,
+                base,
+                quote,
+                price,
+                block_time_seconds,
+                block_height,
+            )
+        }
     }
 
     fn create_signed_tx<I>(

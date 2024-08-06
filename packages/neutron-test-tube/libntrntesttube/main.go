@@ -3,7 +3,7 @@ package main
 import "C"
 
 import (
-	// std
+	sdkmath "cosmossdk.io/math"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
@@ -20,6 +20,8 @@ import (
 	"github.com/neutron-org/neutron-test-tube/neutron-test-tube/result"
 	"github.com/neutron-org/neutron-test-tube/neutron-test-tube/testenv"
 	"github.com/pkg/errors"
+	slinkytypes "github.com/skip-mev/slinky/pkg/types"
+	oracletypes "github.com/skip-mev/slinky/x/oracle/types"
 
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 )
@@ -67,8 +69,6 @@ func InitTestEnv() uint64 { // Temp fix for concurrency issue
 	env.Ctx = newCtx
 
 	reqFinalizeBlock := abci.RequestFinalizeBlock{Height: env.Ctx.BlockHeight(), Txs: [][]byte{}, Time: newBlockTime}
-
-	// env.Ctx = env.App.NewContext(false)
 
 	env.App.FinalizeBlock(&reqFinalizeBlock)
 	env.App.Commit()
@@ -136,7 +136,6 @@ func IncreaseTime(envId uint64, seconds uint64) {
 //export FinalizeBlock
 func FinalizeBlock(envId uint64, base64ReqDeliverTx string) *C.char {
 	return internalFinalizeBlock(envId, base64ReqDeliverTx, 3)
-
 }
 
 func internalFinalizeBlock(envId uint64, base64ReqDeliverTx string, seconds uint64) *C.char {
@@ -379,6 +378,26 @@ func GetValidatorPrivateKey(envId uint64) *C.char {
 	base64Priv := base64.StdEncoding.EncodeToString(priv)
 
 	return C.CString(base64Priv)
+}
+
+//export SetPriceForCurrencyPair
+func SetPriceForCurrencyPair(envId uint64, base, quote string, price int64, blockTimestampSecs int64, blockHeight int64) *C.char {
+	env := loadEnv(envId)
+
+	env.App.OracleKeeper.SetPriceForCurrencyPair(
+		env.Ctx,
+		slinkytypes.CurrencyPair{
+			Base:  base,
+			Quote: quote,
+		},
+		oracletypes.QuotePrice{
+			Price:          sdkmath.NewInt(price),
+			BlockTimestamp: time.Unix(blockTimestampSecs, 0),
+			BlockHeight:    uint64(blockHeight),
+		},
+	)
+
+	return C.CString("")
 }
 
 // ========= utils =========
