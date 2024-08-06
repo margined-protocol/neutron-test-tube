@@ -82,5 +82,15 @@ mod tests {
             &signer,
         )
         .unwrap();
+
+        let balance_after = bank
+            .query_balance(&QueryBalanceRequest {
+                address: receiver.address(),
+                denom: "untrn".to_string(),
+            })
+            .unwrap()
+            .balance
+            .unwrap();
+        assert_eq!(balance_after.amount, 10u128.to_string(),);
     }
 }

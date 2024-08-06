@@ -149,18 +149,14 @@ impl<'a> Runner<'a> for NeutronTestApp {
 #[cfg(test)]
 mod tests {
     use cosmwasm_std::{coins, Coin};
-    use margined_neutron_std::types::{
-        cosmos::bank::v1beta1::QueryAllBalancesRequest,
-        osmosis::tokenfactory::v1beta1::{
-            MsgCreateDenom, MsgCreateDenomResponse, QueryDenomsFromCreatorRequest,
-            QueryParamsRequest, QueryParamsResponse,
-        },
+    use margined_neutron_std::types::osmosis::tokenfactory::v1beta1::{
+        MsgCreateDenom, MsgCreateDenomResponse, QueryParamsRequest, QueryParamsResponse,
     };
 
-    use crate::module::{Bank, TokenFactory, Wasm};
+    use crate::module::Wasm;
     use crate::runner::app::NeutronTestApp;
 
-    use test_tube_ntrn::account::{Account, FeeSetting};
+    use test_tube_ntrn::account::Account;
     use test_tube_ntrn::module::Module;
     use test_tube_ntrn::runner::*;
     use test_tube_ntrn::ExecuteResponse;

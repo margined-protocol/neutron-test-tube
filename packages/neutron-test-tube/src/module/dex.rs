@@ -118,18 +118,13 @@ where
 #[cfg(test)]
 mod tests {
     use cosmwasm_std::Coin;
-    use margined_neutron_std::shim::Any;
-    use margined_neutron_std::types::{
-        cosmos::bank::v1beta1::{MsgSend, QueryBalanceRequest, SendAuthorization},
-        cosmos::base::v1beta1::Coin as BaseCoin,
-        neutron::dex as DexTypes,
-    };
-    use prost::Message;
+    use margined_neutron_std::types::neutron::dex as DexTypes;
 
-    use crate::{Account, Bank, Dex, NeutronTestApp};
+    use crate::{Account, Dex, NeutronTestApp};
     use test_tube_ntrn::Module;
 
     #[test]
+    #[allow(deprecated)]
     fn dex_integration() {
         let app = NeutronTestApp::new();
         let signer = app
@@ -138,15 +133,14 @@ mod tests {
                 Coin::new(1_000_000_000_000u128, "usdc"),
             ])
             .unwrap();
-        let receiver = app
+        let _receiver = app
             .init_account(&[Coin::new(1_000_000_000_000u128, "untrn")])
             .unwrap();
         let dex = Dex::new(&app);
-        let bank = Bank::new(&app);
 
         let scale_factor = 1_000_000_000_000_000_000u128;
 
-        let res = dex
+        let _res = dex
             .place_limit_order(
                 DexTypes::MsgPlaceLimitOrder {
                     creator: signer.address().clone(),
@@ -164,7 +158,7 @@ mod tests {
             )
             .unwrap();
 
-        let res = dex
+        let _res = dex
             .tick_liquidity_all(&DexTypes::QueryAllTickLiquidityRequest {
                 pair_id: "untrn<>usdc".to_string(),
                 token_in: "untrn".to_string(),
