@@ -1,9 +1,12 @@
-use cosmrs::proto::cosmwasm::wasm::v1::{
-    AccessConfig, MsgExecuteContract, MsgExecuteContractResponse, MsgInstantiateContract,
-    MsgInstantiateContractResponse, MsgMigrateContract, MsgMigrateContractResponse, MsgStoreCode,
-    MsgStoreCodeResponse, QuerySmartContractStateRequest, QuerySmartContractStateResponse,
+use margined_neutron_std::types::{
+    cosmos::base::v1beta1::Coin,
+    cosmwasm::wasm::v1::{
+        AccessConfig, MsgExecuteContract, MsgExecuteContractResponse, MsgInstantiateContract,
+        MsgInstantiateContractResponse, MsgMigrateContract, MsgMigrateContractResponse,
+        MsgStoreCode, MsgStoreCodeResponse, QuerySmartContractStateRequest,
+        QuerySmartContractStateResponse,
+    },
 };
-use cosmwasm_std::Coin;
 use serde::{de::DeserializeOwned, Serialize};
 
 use test_tube_ntrn::runner::error::{DecodeError, EncodeError, RunnerError};
@@ -65,9 +68,9 @@ where
                 msg: serde_json::to_vec(msg).map_err(EncodeError::JsonEncodeError)?,
                 funds: funds
                     .iter()
-                    .map(|c| cosmrs::proto::cosmos::base::v1beta1::Coin {
+                    .map(|c| Coin {
                         denom: c.denom.parse().unwrap(),
-                        amount: format!("{}", c.amount.u128()),
+                        amount: c.amount.to_string(),
                     })
                     .collect(),
             },
@@ -92,9 +95,9 @@ where
                 msg: serde_json::to_vec(msg).map_err(EncodeError::JsonEncodeError)?,
                 funds: funds
                     .iter()
-                    .map(|c| cosmrs::proto::cosmos::base::v1beta1::Coin {
+                    .map(|c| Coin {
                         denom: c.denom.parse().unwrap(),
-                        amount: format!("{}", c.amount.u128()),
+                        amount: c.amount.to_string(),
                     })
                     .collect(),
                 contract: contract.to_owned(),

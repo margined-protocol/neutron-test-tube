@@ -10,7 +10,7 @@ require (
 	github.com/cosmos/cosmos-db v1.0.2
 	github.com/cosmos/cosmos-sdk v0.50.7
 	github.com/cosmos/gogoproto v1.5.0
-	github.com/neutron-org/neutron/v4 v4.1.0
+	github.com/neutron-org/neutron/v4 v4.2.0
 	github.com/pkg/errors v0.9.1
 )
 
@@ -36,7 +36,7 @@ require (
 	filippo.io/edwards25519 v1.1.0 // indirect
 	github.com/99designs/go-keychain v0.0.0-20191008050251-8e49817e8af4 // indirect
 	github.com/99designs/keyring v1.2.2 // indirect
-	github.com/CosmWasm/wasmvm/v2 v2.0.0 // indirect
+	github.com/CosmWasm/wasmvm/v2 v2.0.2 // indirect
 	github.com/DataDog/datadog-go v3.2.0+incompatible // indirect
 	github.com/DataDog/zstd v1.5.5 // indirect
 	github.com/GeertJohan/go.rice v1.0.3 // indirect
@@ -247,21 +247,9 @@ require (
 )
 
 replace (
-	// github.com/CosmWasm/wasmd => github.com/neutron-org/wasmd v0.51.0
-	// github.com/cosmos/cosmos-sdk => github.com/neutron-org/cosmos-sdk v0.50.7-neutron
-	// github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
-	github.com/CosmWasm/wasmd => github.com/neutron-org/wasmd v0.51.0
+	github.com/CosmWasm/wasmd => github.com/neutron-org/wasmd v0.51.1
 	github.com/cosmos/admin-module/v2 => github.com/neutron-org/admin-module/v2 v2.0.0
-	github.com/cosmos/cosmos-sdk => github.com/neutron-org/cosmos-sdk v0.50.7-neutron
-
-	// Not sure why exactly we need this looking at deps but go.mod isn't
-	// happy without it.
-	// github.com/cosmos/cosmos-sdk/store => cosmossdk.io/store v1.1.0
-	// github.com/cosmos/cosmos-sdk/x/evidence => cosmossdk.io/x/evidence v0.1.1
-	// github.com/cosmos/cosmos-sdk/x/feegrant => cosmossdk.io/x/feegrant v0.1.1
-	// github.com/cosmos/cosmos-sdk/x/upgrade => cosmossdk.io/x/upgrade v0.1.3
-
-	// explicitely replace iavl to v1.2.0 cause sometimes go mod tidy uses not right version
+	github.com/cosmos/cosmos-sdk => github.com/neutron-org/cosmos-sdk v0.50.8-neutron
 	github.com/cosmos/iavl => github.com/cosmos/iavl v1.2.0
 	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
 	github.com/prometheus/procfs => github.com/prometheus/procfs v0.12.0

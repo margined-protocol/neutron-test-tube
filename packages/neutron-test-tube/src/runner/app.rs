@@ -177,7 +177,7 @@ mod tests {
             .init_accounts(&coins(100_000_000_000, "untrn"), 3)
             .unwrap();
 
-        assert!(accounts.get(0).is_some());
+        assert!(accounts.first().is_some());
         assert!(accounts.get(1).is_some());
         assert!(accounts.get(2).is_some());
         assert!(accounts.get(3).is_none());
