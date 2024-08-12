@@ -137,6 +137,7 @@ mod tests {
         let scale_factor = 1_000_000_000_000_000_000u128;
 
         dex.place_limit_order(
+            #[allow(deprecated)]
             DexTypes::MsgPlaceLimitOrder {
                 creator: signer.address().clone(),
                 receiver: signer.address().clone(),

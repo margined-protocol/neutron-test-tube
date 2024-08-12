@@ -35,7 +35,7 @@ func InitTestEnv() uint64 { // Temp fix for concurrency issue
 	defer mu.Unlock()
 
 	// temp: suppress noise from stdout
-	// os.Stdout = nil
+	os.Stdout = nil
 
 	envCounter += 1
 	id := envCounter
