@@ -2,7 +2,6 @@ package testenv
 
 import (
 	"encoding/json"
-	"fmt"
 	"strings"
 	"time"
 
@@ -12,31 +11,29 @@ import (
 	"cosmossdk.io/log"
 	sdkmath "cosmossdk.io/math"
 
-	// dbm "github.com/cometbft/cometbft-db"
+	// cometbft
 	abci "github.com/cometbft/cometbft/abci/types"
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
 	tmtypes "github.com/cometbft/cometbft/types"
 	dbm "github.com/cosmos/cosmos-db"
-	"github.com/cosmos/cosmos-sdk/baseapp"
 
 	// cosmos sdk
+	"github.com/cosmos/cosmos-sdk/baseapp"
+	"github.com/cosmos/cosmos-sdk/client/flags"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	cryptocodec "github.com/cosmos/cosmos-sdk/crypto/codec"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
 	"github.com/cosmos/cosmos-sdk/server"
-
+	servertypes "github.com/cosmos/cosmos-sdk/server/types"
 	simtestutil "github.com/cosmos/cosmos-sdk/testutil/sims"
-
-	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
-
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
+	bankkeeper "github.com/cosmos/cosmos-sdk/x/bank/keeper"
 	banktypes "github.com/cosmos/cosmos-sdk/x/bank/types"
 	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 
 	// wasmd
-
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 
@@ -55,15 +52,22 @@ type TestEnv struct {
 	NodeHome           string
 }
 
-// DebugAppOptions is a stub implementing AppOptions
-type DebugAppOptions struct{}
+type DebugAppOptions map[string]interface{}
 
-// Get implements AppOptions
-func (ao DebugAppOptions) Get(o string) interface{} {
-	if o == server.FlagTrace {
-		return true
+func (m DebugAppOptions) Get(key string) interface{} {
+	v, ok := m[key]
+	if !ok {
+		return nil
 	}
-	return nil
+
+	return v
+}
+
+func NewDebugAppOptionsWithFlagHome(homePath string) servertypes.AppOptions {
+	return DebugAppOptions{
+		flags.FlagHome:   homePath,
+		server.FlagTrace: true,
+	}
 }
 
 func NewNeutronApp(nodeHome string) *app.App {
@@ -282,17 +286,5 @@ func (env *TestEnv) SetupParamTypes() {
 func requireNoErr(err error) {
 	if err != nil {
 		panic(err)
-	}
-}
-
-func requireNoNil(name string, nilable any) {
-	if nilable == nil {
-		panic(fmt.Sprintf("%s must not be nil", name))
-	}
-}
-
-func requireTrue(name string, b bool) {
-	if !b {
-		panic(fmt.Sprintf("%s must be true", name))
 	}
 }
