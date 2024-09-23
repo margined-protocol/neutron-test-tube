@@ -1,11 +1,11 @@
+use cosmrs::Any;
 use cosmwasm_std::Coin;
-
 use prost::Message;
 use test_tube_ntrn::account::SigningAccount;
 
 use test_tube_ntrn::runner::result::{RunnerExecuteResult, RunnerResult};
 use test_tube_ntrn::runner::Runner;
-use test_tube_ntrn::BaseApp;
+use test_tube_ntrn::{runner::app::SlinkyPrices, BaseApp};
 
 const FEE_DENOM: &str = "untrn";
 const NEUTRON_ADDRESS_PREFIX: &str = "neutron";
@@ -75,6 +75,11 @@ impl NeutronTestApp {
         self.inner.increase_time(seconds)
     }
 
+    /// Set the slinky prices
+    pub fn set_slinky_prices(&self, prices: &[SlinkyPrices]) {
+        self.inner.set_slinky_prices(prices)
+    }
+
     /// Initialize account with initial balance of any coins.
     /// This function mints new coins and send to newly created account
     pub fn init_account(&self, coins: &[Coin]) -> RunnerResult<SigningAccount> {
@@ -98,10 +103,10 @@ impl NeutronTestApp {
         self.inner.simulate_tx(msgs, signer)
     }
 
-    // /// Set parameter set for a given subspace.
-    // pub fn set_param_set(&self, subspace: &str, pset: impl Into<Any>) -> RunnerResult<()> {
-    //     self.inner.set_param_set(subspace, pset)
-    // }
+    /// Set parameter set for a given subspace.
+    pub fn set_param_set(&self, subspace: &str, pset: impl Into<Any>) -> RunnerResult<()> {
+        self.inner.set_param_set(subspace, pset)
+    }
 
     /// Get parameter set for a given subspace.
     pub fn get_param_set<P: Message + Default>(

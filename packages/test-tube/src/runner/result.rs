@@ -131,13 +131,29 @@ where
 
     fn try_from(res: ResponseFinalizeBlock) -> Result<Self, Self::Error> {
         // NOTE: this actually returns multiple transactions
-        let tx = res
-            .tx_results
-            .first()
-            .or_else(|| res.tx_results.get(1))
-            .ok_or(RunnerError::ExecuteError {
+        // let tx = res
+        //     .tx_results
+        //     .first()
+        //     .or_else(|| res.tx_results.get(1))
+        //     .ok_or(RunnerError::ExecuteError {
+        //         msg: "No tx results".to_string(),
+        //     })?;
+        // let tx = res
+        //     .tx_results
+        //     .get(1) // Access the second item directly (index 1)
+        //     .ok_or(RunnerError::ExecuteError {
+        //         msg: "No second tx result".to_string(),
+        //     })?;
+
+        let tx = if res.tx_results.len() < 2 {
+            res.tx_results.first().ok_or(RunnerError::ExecuteError {
                 msg: "No tx results".to_string(),
-            })?;
+            })?
+        } else {
+            res.tx_results.get(1).ok_or(RunnerError::ExecuteError {
+                msg: "No tx results".to_string(),
+            })?
+        };
 
         let tx_msg_data =
             TxMsgData::decode(tx.data.as_ref()).map_err(DecodeError::ProtoDecodeError)?;

@@ -11,6 +11,9 @@ import (
 	"cosmossdk.io/log"
 	sdkmath "cosmossdk.io/math"
 
+	// adminmodule
+	adminmoduletypes "github.com/cosmos/admin-module/v2/x/adminmodule/types"
+
 	// cometbft
 	abci "github.com/cometbft/cometbft/abci/types"
 	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
@@ -33,6 +36,10 @@ import (
 	slashingtypes "github.com/cosmos/cosmos-sdk/x/slashing/types"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
 
+	// interchain security
+	ccvconsumertypes "github.com/cosmos/interchain-security/v5/x/ccv/consumer/types"
+	ccvtypes "github.com/cosmos/interchain-security/v5/x/ccv/types"
+
 	// wasmd
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
@@ -41,13 +48,21 @@ import (
 	"github.com/neutron-org/neutron/v4/app"
 	dexmoduletypes "github.com/neutron-org/neutron/v4/x/dex/types"
 	tokenfactorytypes "github.com/neutron-org/neutron/v4/x/tokenfactory/types"
+
+	// slinky
+	compression "github.com/skip-mev/slinky/abci/strategies/codec"
+	"github.com/skip-mev/slinky/abci/testutils"
+	slinkytypes "github.com/skip-mev/slinky/pkg/types"
+	marketmaptypes "github.com/skip-mev/slinky/x/marketmap/types"
+	oraclekeeper "github.com/skip-mev/slinky/x/oracle/keeper"
+	oracletypes "github.com/skip-mev/slinky/x/oracle/types"
 )
 
 type TestEnv struct {
 	App                *app.App
 	Ctx                sdk.Context
 	ParamTypesRegistry ParamTypeRegistry
-	ValPrivs           []*secp256k1.PrivKey
+	ValPrivs           secp256k1.PrivKey
 	Validator          []byte
 	NodeHome           string
 }
@@ -83,7 +98,7 @@ func NewNeutronApp(nodeHome string) *app.App {
 		true,
 		map[int64]bool{},
 		nodeHome,
-		5,
+		0,
 		encCfg,
 		DebugAppOptions{},
 		emptyWasmOpts,
@@ -115,10 +130,13 @@ func InitChain(appInstance *app.App) (sdk.Context, secp256k1.PrivKey) {
 
 	requireNoErr(err)
 
-	concensusParams := simtestutil.DefaultConsensusParams
-	concensusParams.Block = &tmproto.BlockParams{
+	consensusParams := simtestutil.DefaultConsensusParams
+	consensusParams.Block = &tmproto.BlockParams{
 		MaxBytes: 22020096,
 		MaxGas:   -1,
+	}
+	consensusParams.Abci = &tmproto.ABCIParams{
+		VoteExtensionsEnableHeight: 2,
 	}
 
 	// replace sdk.DefaultDenom with "untrn", a bit of a hack, needs improvement
@@ -127,7 +145,7 @@ func InitChain(appInstance *app.App) (sdk.Context, secp256k1.PrivKey) {
 	appInstance.InitChain(
 		&abci.RequestInitChain{
 			Validators:      []abci.ValidatorUpdate{},
-			ConsensusParams: concensusParams,
+			ConsensusParams: consensusParams,
 			AppStateBytes:   stateBytes,
 			ChainId:         "neutron-666",
 		},
@@ -158,6 +176,7 @@ func GenesisStateWithValSet(appInstance *app.App) (app.GenesisState, secp256k1.P
 	pubKey, _ := privVal.GetPubKey()
 	validator := tmtypes.NewValidator(pubKey, 1)
 	valSet := tmtypes.NewValidatorSet([]*tmtypes.Validator{validator})
+	valAcc := authtypes.NewBaseAccountWithAddress(pubKey.Address().Bytes())
 
 	// generate genesis account
 	senderPrivKey := secp256k1.GenPrivKey()
@@ -165,11 +184,47 @@ func GenesisStateWithValSet(appInstance *app.App) (app.GenesisState, secp256k1.P
 	acc := authtypes.NewBaseAccountWithAddress(senderPrivKey.PubKey().Address().Bytes())
 
 	//////////////////////
-	balances := []banktypes.Balance{}
+	validatorBalance := banktypes.Balance{
+		Address: valAcc.GetAddress().String(),
+		Coins:   sdk.NewCoins(sdk.NewCoin("untrn", sdkmath.NewInt(1000000000000000000))),
+	}
+	balances := []banktypes.Balance{validatorBalance}
 	genesisState := app.NewDefaultGenesisState(appInstance.AppCodec())
-	genAccs := []authtypes.GenesisAccount{acc}
+	genAccs := []authtypes.GenesisAccount{acc, valAcc}
 	authGenesis := authtypes.NewGenesisState(authtypes.DefaultParams(), genAccs)
 	genesisState[authtypes.ModuleName] = appInstance.AppCodec().MustMarshalJSON(authGenesis)
+
+	// set adminmodule genesis state
+	adminGen := adminmoduletypes.GenesisState{
+		Admins: []string{valAcc.Address},
+	}
+	genesisState[adminmoduletypes.ModuleName] = appInstance.AppCodec().MustMarshalJSON(&adminGen)
+
+	// set marketmap genesis state
+	marketmapGen := marketmaptypes.GenesisState{
+		Params: marketmaptypes.Params{
+			MarketAuthorities: []string{valAcc.Address},
+			Admin:             valAcc.Address,
+		},
+	}
+	genesisState[marketmaptypes.ModuleName] = appInstance.AppCodec().MustMarshalJSON(&marketmapGen)
+
+	// set oracle genesis state
+	oracleGen := oracletypes.GenesisState{
+		CurrencyPairGenesis: []oracletypes.CurrencyPairGenesis{
+			{
+				CurrencyPair: slinkytypes.CurrencyPair{
+					Base:  "ATOM",
+					Quote: "USDT",
+				},
+				CurrencyPairPrice: &oracletypes.QuotePrice{Price: sdkmath.NewInt(4480000)},
+				Nonce:             0,
+				Id:                0,
+			},
+		},
+		NextId: 1,
+	}
+	genesisState[oracletypes.ModuleName] = appInstance.AppCodec().MustMarshalJSON(&oracleGen)
 
 	validators := make([]stakingtypes.Validator, 0, len(valSet.Validators))
 	delegations := make([]stakingtypes.Delegation, 0, len(valSet.Validators))
@@ -207,6 +262,15 @@ func GenesisStateWithValSet(appInstance *app.App) (app.GenesisState, secp256k1.P
 	stakingGenesis := stakingtypes.NewGenesisState(stakingtypes.DefaultParams(), validators, delegations)
 	genesisState[stakingtypes.ModuleName] = appInstance.AppCodec().MustMarshalJSON(stakingGenesis)
 
+	// initialValset := []abci.ValidatorUpdate{{PubKey: tmProtoPublicKey, Power: 100}}
+	ccvGenesis := ccvconsumertypes.DefaultGenesisState()
+	ccvGenesis.Params.Enabled = true
+	ccvGenesis.PreCCV = false
+	ccvGenesis.Provider = ccvtypes.ProviderInfo{
+		InitialValSet: initValPowers,
+	}
+	genesisState[ccvconsumertypes.ModuleName] = appInstance.AppCodec().MustMarshalJSON(ccvGenesis)
+
 	totalSupply := sdk.NewCoins()
 	for _, b := range balances {
 		// add genesis acc tokens to total supply
@@ -242,15 +306,34 @@ func GenesisStateWithValSet(appInstance *app.App) (app.GenesisState, secp256k1.P
 	return genesisState, secp256k1.PrivKey{Key: privVal.PrivKey.Bytes()}
 }
 
-func (env *TestEnv) BeginNewBlock(executeNextEpoch bool, timeIncreaseSeconds uint64) {
-	newBlockTime := env.Ctx.BlockTime().Add(time.Duration(timeIncreaseSeconds) * time.Second)
+func CreateExtendedVoteInfo(val secp256k1.PrivKey, prices map[uint64][]byte) []byte {
+	ca := sdk.ConsAddress(val.PubKey().Address())
 
-	newCtx := env.Ctx.WithBlockTime(newBlockTime).WithBlockHeight(env.Ctx.BlockHeight() + 1)
-	env.Ctx = newCtx
+	// Create the vote extensions handler that will be used to extend and verify
+	// vote extensions (i.e. oracle data).
+	veCodec := compression.NewCompressionVoteExtensionCodec(
+		compression.NewDefaultVoteExtensionCodec(),
+		compression.NewZLibCompressor(),
+	)
+	extCommitCodec := compression.NewCompressionExtendedCommitCodec(
+		compression.NewDefaultExtendedCommitCodec(),
+		compression.NewZStdCompressor(),
+	)
 
-	env.App.BeginBlocker(newCtx)
+	vote, err := testutils.CreateExtendedVoteInfo(
+		ca,
+		prices,
+		veCodec,
+	)
+	requireNoErr(err)
 
-	env.Ctx = env.App.NewContext(false)
+	_, extCommitInfoBz, err := testutils.CreateExtendedCommitInfo(
+		[]abci.ExtendedVoteInfo{vote},
+		extCommitCodec,
+	)
+	requireNoErr(err)
+
+	return extCommitInfoBz
 }
 
 func (env *TestEnv) GetValidatorPrivateKey() []byte {
@@ -275,6 +358,32 @@ func (env *TestEnv) FundAccount(ctx sdk.Context, bankKeeper bankkeeper.Keeper, a
 	}
 
 	return bankKeeper.SendCoinsFromModuleToAccount(ctx, dexmoduletypes.ModuleName, addr, amounts)
+}
+
+func GetCurrentPriceAndPairMapping(ctx sdk.Context, oracle oraclekeeper.Keeper, base, quote string) (sdkmath.Int, uint64, error) {
+	ccyPair := slinkytypes.CurrencyPair{
+		Base:  base,
+		Quote: quote,
+	}
+
+	pairs, err := oracle.GetCurrencyPairMapping(ctx)
+	if err != nil {
+		return sdkmath.ZeroInt(), 0, err
+	}
+
+	pairIndex := uint64(0)
+	for idx, pair := range pairs {
+		if pair.Base == base && pair.Quote == quote {
+			pairIndex = idx
+		}
+	}
+
+	res, err := oracle.GetPriceForCurrencyPair(ctx, ccyPair)
+	if err != nil {
+		return sdkmath.ZeroInt(), pairIndex, nil
+	}
+
+	return res.Price, pairIndex, nil
 }
 
 func (env *TestEnv) SetupParamTypes() {

@@ -6,14 +6,16 @@ use cosmrs::crypto::secp256k1::SigningKey;
 use cosmrs::proto::tendermint::v0_38::abci::ResponseFinalizeBlock;
 use cosmrs::tx;
 use cosmrs::tx::{Fee, SignerInfo};
+use cosmrs::Any;
 use cosmwasm_std::Coin;
 use prost::Message;
+use serde::Serialize;
 
 use crate::account::{Account, FeeSetting, SigningAccount};
 use crate::bindings::{
     AccountNumber, AccountSequence, FinalizeBlock, GetBlockHeight, GetBlockTime, GetParamSet,
     GetValidatorAddress, GetValidatorPrivateKey, IncreaseTime, InitAccount, InitTestEnv, Query,
-    Simulate,
+    SetParamSet, SetSlinkyPrices, Simulate,
 };
 use crate::redefine_as_go_string;
 use crate::runner::error::{DecodeError, EncodeError, RunnerError};
@@ -30,6 +32,13 @@ pub struct BaseApp {
     chain_id: String,
     address_prefix: String,
     default_gas_adjustment: f64,
+}
+
+#[derive(Debug, Serialize, PartialEq)]
+pub struct SlinkyPrices {
+    pub base: String,
+    pub quote: String,
+    pub price: u128,
 }
 
 impl BaseApp {
@@ -53,6 +62,18 @@ impl BaseApp {
     pub fn increase_time(&self, seconds: u64) {
         unsafe {
             IncreaseTime(self.id, seconds.try_into().unwrap());
+        }
+    }
+
+    /// Sets prices in slinky
+    pub fn set_slinky_prices(&self, prices: &[SlinkyPrices]) {
+        let prices_json = serde_json::to_string(&prices)
+            .map_err(EncodeError::JsonEncodeError)
+            .unwrap();
+        redefine_as_go_string!(prices_json);
+
+        unsafe {
+            SetSlinkyPrices(self.id, prices_json);
         }
     }
 
@@ -103,7 +124,7 @@ impl BaseApp {
         let signing_key = SigningKey::from_slice(&secp256k1_priv).unwrap();
 
         let validator = SigningAccount::new(
-            "untrn".to_string(),
+            self.address_prefix.to_string(),
             signing_key,
             FeeSetting::Auto {
                 gas_price: Coin::new(NEUTRON_MIN_GAS_PRICE, denom),
@@ -273,6 +294,24 @@ impl BaseApp {
         res
     }
 
+    /// Set parameter set for a given subspace.
+    pub fn set_param_set(&self, subspace: &str, pset: impl Into<Any>) -> RunnerResult<()> {
+        unsafe {
+            let pset = Message::encode_to_vec(&pset.into());
+            let pset = BASE64_STANDARD.encode(pset);
+            redefine_as_go_string!(pset);
+            redefine_as_go_string!(subspace);
+            let res = SetParamSet(self.id, subspace, pset);
+
+            // Just move one block forward
+            IncreaseTime(self.id, 1u64.try_into().unwrap());
+
+            // returns empty bytes if success
+            RawResult::from_non_null_ptr(res).into_result()?;
+            Ok(())
+        }
+    }
+
     /// Get parameter set for a given subspace.
     pub fn get_param_set<P: Message + Default>(
         &self,
@@ -347,6 +386,8 @@ impl<'a> Runner<'a> for BaseApp {
             let res = ResponseFinalizeBlock::decode(res.as_slice())
                 .unwrap()
                 .try_into();
+
+            println!("res: {:?}", res);
 
             res
         }

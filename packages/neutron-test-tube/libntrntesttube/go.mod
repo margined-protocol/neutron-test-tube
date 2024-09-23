@@ -7,11 +7,14 @@ require (
 	cosmossdk.io/math v1.3.0
 	github.com/CosmWasm/wasmd v0.51.0
 	github.com/cometbft/cometbft v0.38.10
+	github.com/cosmos/admin-module/v2 v2.0.0-20240430142959-8b3328d1b1a2
 	github.com/cosmos/cosmos-db v1.0.2
 	github.com/cosmos/cosmos-sdk v0.50.7
 	github.com/cosmos/gogoproto v1.5.0
+	github.com/cosmos/interchain-security/v5 v5.0.0
 	github.com/neutron-org/neutron/v4 v4.2.0
 	github.com/pkg/errors v0.9.1
+	github.com/skip-mev/slinky v1.0.3
 )
 
 require (
@@ -65,7 +68,6 @@ require (
 	github.com/cometbft/cometbft-db v0.11.0 // indirect
 	github.com/consensys/bavard v0.1.13 // indirect
 	github.com/consensys/gnark-crypto v0.12.1 // indirect
-	github.com/cosmos/admin-module/v2 v2.0.0-20240430142959-8b3328d1b1a2 // indirect
 	github.com/cosmos/btcutil v1.0.5 // indirect
 	github.com/cosmos/cosmos-proto v1.0.0-beta.5 // indirect
 	github.com/cosmos/go-bip39 v1.0.0 // indirect
@@ -75,7 +77,6 @@ require (
 	github.com/cosmos/ibc-go/modules/capability v1.0.0 // indirect
 	github.com/cosmos/ibc-go/v8 v8.2.1 // indirect
 	github.com/cosmos/ics23/go v0.10.0 // indirect
-	github.com/cosmos/interchain-security/v5 v5.0.0 // indirect
 	github.com/cosmos/ledger-cosmos-go v0.13.3 // indirect
 	github.com/crate-crypto/go-kzg-4844 v1.0.0 // indirect
 	github.com/daaku/go.zipexe v1.0.2 // indirect
@@ -191,7 +192,6 @@ require (
 	github.com/shirou/gopsutil v3.21.4-0.20210419000835-c7a38de76ee5+incompatible // indirect
 	github.com/skip-mev/block-sdk/v2 v2.1.2 // indirect
 	github.com/skip-mev/feemarket v1.0.3 // indirect
-	github.com/skip-mev/slinky v1.0.3 // indirect
 	github.com/sourcegraph/conc v0.3.0 // indirect
 	github.com/spf13/afero v1.11.0 // indirect
 	github.com/spf13/cast v1.6.0 // indirect
@@ -199,6 +199,7 @@ require (
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/spf13/viper v1.19.0 // indirect
 	github.com/streamingfast/logging v0.0.0-20230608130331-f22c91403091 // indirect
+	github.com/stretchr/objx v0.5.2 // indirect
 	github.com/stretchr/testify v1.9.0 // indirect
 	github.com/subosito/gotenv v1.6.0 // indirect
 	github.com/supranational/blst v0.3.11 // indirect
@@ -248,7 +249,7 @@ require (
 
 replace (
 	github.com/CosmWasm/wasmd => github.com/neutron-org/wasmd v0.51.1
-	github.com/cosmos/admin-module/v2 => github.com/neutron-org/admin-module/v2 v2.0.0
+	github.com/cosmos/admin-module/v2 => github.com/neutron-org/admin-module/v2 v2.0.2
 	github.com/cosmos/cosmos-sdk => github.com/neutron-org/cosmos-sdk v0.50.8-neutron
 	github.com/cosmos/iavl => github.com/cosmos/iavl v1.2.0
 	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
