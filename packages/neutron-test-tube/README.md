@@ -287,6 +287,7 @@ let res = dex
             expiration_time: None,
             max_amount_out: "".to_string(),
             limit_sell_price: (10u128 * scale_factor).to_string(),
+            min_average_sell_price: "".to_string(),
         },
         &signer,
     )
