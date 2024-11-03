@@ -18,7 +18,7 @@ margined-neutron-std = { version = "5.0.0" }
 prost                = { version = "0.13.3", features = [ "prost-derive" ] }
 serde                = { version = "1.0.144" }
 serde_json           = { version = "1.0.85" }
-test-tube-ntrn       = { version = "0.1.4", path = "../test-tube" }
+test-tube-ntrn       = { version = "0.1.6" }
 thiserror            = { version = "1.0.34" }
 
 [build-dependencies]

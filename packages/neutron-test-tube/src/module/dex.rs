@@ -149,6 +149,7 @@ mod tests {
                 expiration_time: None,
                 max_amount_out: "".to_string(),
                 limit_sell_price: (10u128 * scale_factor).to_string(),
+                min_average_sell_price: "".to_string(),
             },
             &signer,
         )
@@ -160,5 +161,31 @@ mod tests {
             pagination: None,
         })
         .unwrap();
+
+        let orders = dex
+            .limit_order_tranche_user_all_by_address(
+                &DexTypes::QueryAllLimitOrderTrancheUserByAddressRequest {
+                    address: signer.address().clone(),
+                    pagination: None,
+                },
+            )
+            .unwrap();
+        assert_eq!(orders.limit_orders.len(), 1);
+        assert_eq!(
+            orders.limit_orders[0],
+            DexTypes::LimitOrderTrancheUser {
+                trade_pair_id: Some(DexTypes::TradePairId {
+                    maker_denom: "untrn".to_string(),
+                    taker_denom: "usdc".to_string(),
+                }),
+                tick_index_taker_to_maker: -184216,
+                tranche_key: "1341m7v".to_string(),
+                address: signer.address().clone(),
+                shares_owned: "1000000000000000000".to_string(),
+                shares_cancelled: "0".to_string(),
+                shares_withdrawn: "0".to_string(),
+                order_type: 0,
+            }
+        );
     }
 }
