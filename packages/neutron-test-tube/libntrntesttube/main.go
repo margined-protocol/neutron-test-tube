@@ -6,6 +6,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"math/big"
 	"os"
 	"sync"
 	"time"
@@ -20,6 +21,8 @@ import (
 	"github.com/margined-protocol/test-tube/neutron-test-tube/testenv"
 	"github.com/pkg/errors"
 
+	sdkmath "cosmossdk.io/math"
+
 	wasmtypes "github.com/CosmWasm/wasmd/x/wasm/types"
 )
 
@@ -28,6 +31,12 @@ var (
 	envRegister        = sync.Map{}
 	mu          sync.Mutex
 )
+
+type Price struct {
+	Base  string `json:"base"`
+	Quote string `json:"quote"`
+	Price int    `json:"price"`
+}
 
 //export InitTestEnv
 func InitTestEnv() uint64 { // Temp fix for concurrency issue
@@ -54,7 +63,8 @@ func InitTestEnv() uint64 { // Temp fix for concurrency issue
 	ctx, valPriv := testenv.InitChain(env.App)
 
 	env.Ctx = ctx
-	env.ValPrivs = []*secp256k1.PrivKey{&valPriv}
+	env.ValPrivs = secp256k1.PrivKey{Key: valPriv.Bytes()}
+	env.Validator = valPriv.Bytes()
 
 	env.SetupParamTypes()
 
@@ -125,33 +135,25 @@ func InitAccount(envId uint64, coinsJson string) *C.char {
 	return C.CString(base64Priv)
 }
 
-//export IncreaseTime
-func IncreaseTime(envId uint64, seconds uint64) {
-	internalFinalizeBlock(envId, "", seconds)
-}
+// Core function to adjust block time and finalize
+func finalizeWithTime(envId uint64, txBytes [][]byte, seconds uint64) *C.char {
 
-//export FinalizeBlock
-func FinalizeBlock(envId uint64, base64ReqDeliverTx string) *C.char {
-	return internalFinalizeBlock(envId, base64ReqDeliverTx, 3)
-}
-
-func internalFinalizeBlock(envId uint64, base64ReqDeliverTx string, seconds uint64) *C.char {
 	env := loadEnv(envId)
-	// Temp fix for concurrency issue
 	mu.Lock()
 	defer mu.Unlock()
 
-	reqDeliverTxBytes, err := base64.StdEncoding.DecodeString(base64ReqDeliverTx)
-	if err != nil {
-		panic(err)
-	}
-
+	// Update context with new block time and height
 	newBlockTime := env.Ctx.BlockTime().Add(time.Duration(seconds) * time.Second)
 	newCtx := env.Ctx.WithBlockTime(newBlockTime).WithBlockHeight(env.Ctx.BlockHeight() + 1)
 	env.Ctx = newCtx
 
-	reqFinalizeBlock := &abci.RequestFinalizeBlock{Height: env.Ctx.BlockHeight(), Txs: [][]byte{reqDeliverTxBytes}, Time: newBlockTime}
+	reqFinalizeBlock := &abci.RequestFinalizeBlock{
+		Height: env.Ctx.BlockHeight(),
+		Txs:    txBytes,
+		Time:   newBlockTime,
+	}
 
+	// Finalize the block
 	res, err := env.App.FinalizeBlock(reqFinalizeBlock)
 	if err != nil {
 		panic(err)
@@ -161,15 +163,81 @@ func internalFinalizeBlock(envId uint64, base64ReqDeliverTx string, seconds uint
 		panic(err)
 	}
 
+	// Marshal result and update environment registry
 	bz, err := proto.Marshal(res)
 	if err != nil {
 		panic(err)
 	}
-
 	envRegister.Store(envId, env)
 
 	return encodeBytesResultBytes(bz)
+}
 
+// Helper function to create transaction bytes based on block height
+func getTxBytes(env *testenv.TestEnv, reqDeliverTxBytes []byte, additionalBytes []byte) [][]byte {
+	if env.Ctx.BlockHeight() < 2 {
+		return [][]byte{reqDeliverTxBytes}
+	}
+	return [][]byte{additionalBytes, reqDeliverTxBytes}
+}
+
+//export IncreaseTime
+func IncreaseTime(envId uint64, seconds uint64) {
+	env := loadEnv(envId)
+
+	finalizeWithTime(envId, getTxBytes(&env, nil, nil), seconds)
+}
+
+//export FinalizeBlock
+func FinalizeBlock(envId uint64, base64ReqDeliverTx string) *C.char {
+	env := loadEnv(envId)
+
+	reqDeliverTxBytes, err := base64.StdEncoding.DecodeString(base64ReqDeliverTx)
+	if err != nil {
+		panic(err)
+	}
+
+	return finalizeWithTime(envId, getTxBytes(&env, reqDeliverTxBytes, nil), 3)
+}
+
+//export SetSlinkyPrices
+func SetSlinkyPrices(envId uint64, pricesJson string) {
+	env := loadEnv(envId)
+
+	prices := parsePrices(pricesJson)
+	slinkyPrices := calculateSlinkyPrices(&env, prices)
+
+	extCommitInfoBz := testenv.CreateExtendedVoteInfo(env.ValPrivs, slinkyPrices)
+
+	finalizeWithTime(envId, getTxBytes(&env, nil, extCommitInfoBz), 3)
+}
+
+// Helper to parse JSON prices into Price struct array
+func parsePrices(pricesJson string) []Price {
+	var prices []Price
+	if err := json.Unmarshal([]byte(pricesJson), &prices); err != nil {
+		panic(err)
+	}
+	return prices
+}
+
+// Helper to calculate slinky prices
+func calculateSlinkyPrices(env *testenv.TestEnv, prices []Price) map[uint64][]byte {
+	slinkyPrices := map[uint64][]byte{}
+	for _, price := range prices {
+		currentPrice, idx, err := testenv.GetCurrentPriceAndPairMapping(env.Ctx, *env.App.OracleKeeper, price.Base, price.Quote)
+		if err != nil {
+			panic(err)
+		}
+		newPrice := sdkmath.NewIntFromBigInt(big.NewInt(int64(price.Price)))
+		delta := newPrice.Sub(currentPrice)
+		encodedDelta, err := big.NewInt(delta.Int64()).GobEncode()
+		if err != nil {
+			panic(err)
+		}
+		slinkyPrices[idx] = encodedDelta
+	}
+	return slinkyPrices
 }
 
 //export WasmSudo
@@ -363,8 +431,8 @@ func GetParamSet(envId uint64, subspaceName, typeUrl string) *C.char {
 //export GetValidatorAddress
 func GetValidatorAddress(envId uint64, n int32) *C.char {
 	// env := loadEnv(envId)
-	return C.CString("")
 	// return C.CString(env.GetValidatorAddresses()[n])
+	return C.CString("")
 }
 
 //export GetValidatorPrivateKey

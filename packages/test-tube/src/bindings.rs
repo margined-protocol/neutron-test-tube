@@ -221,6 +221,9 @@ extern "C" {
     pub fn IncreaseTime(envId: GoUint64, seconds: GoInt64);
 }
 extern "C" {
+    pub fn SetSlinkyPrices(envId: GoUint64, pricesJson: GoString);
+}
+extern "C" {
     pub fn Query(
         envId: GoUint64,
         path: GoString,
