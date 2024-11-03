@@ -4,21 +4,21 @@ edition     = "2021"
 license     = "MIT OR Apache-2.0"
 name        = "neutron-test-tube"
 repository  = "https://github.com/margined-protocol/test-tube"
-version     = "4.2.3-slinky"
+version     = "5.0.0"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 exclude = [ "neutron", "test_artifacts" ]
 
 [dependencies]
 base64               = { version = "0.21.5" }
-cosmrs               = { version = "0.15.0", features = [ "cosmwasm", "rpc" ] }
+cosmrs               = { version = "0.20.0", features = [ "cosmwasm", "rpc" ] }
 cosmwasm-std         = { version = "2.1.0", features = [ "abort", "cosmwasm_1_2", "cosmwasm_1_3", "cosmwasm_1_4", "cosmwasm_2_0", "iterator", "stargate" ] }
 hex                  = { version = "0.4.2" }
-margined-neutron-std = { version = "=4.2.3-slinky" }
-prost                = { version = "0.12.6" }
+margined-neutron-std = { version = "5.0.0" }
+prost                = { version = "0.13.3", features = [ "prost-derive" ] }
 serde                = { version = "1.0.144" }
 serde_json           = { version = "1.0.85" }
-test-tube-ntrn       = { version = "0.1.4" }
+test-tube-ntrn       = { version = "0.1.6" }
 thiserror            = { version = "1.0.34" }
 
 [build-dependencies]

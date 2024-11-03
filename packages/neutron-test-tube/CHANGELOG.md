@@ -5,7 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
-## 4.2.0-1 - 2024-12-08
+## 5.0.0 - 2024-11-03
+
+### Changed
+
+- Bump `neutron` chain to `v5.0.0`
+- Bump `margined-neutron-std`
+- Bump `prost` to `0.13.3`
+
+## 4.2.0-1 - 2024-08-12
 
 ### Changed
 

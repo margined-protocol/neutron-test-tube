@@ -387,8 +387,6 @@ impl<'a> Runner<'a> for BaseApp {
                 .unwrap()
                 .try_into();
 
-            println!("res: {:?}", res);
-
             res
         }
     }
