@@ -14,7 +14,7 @@ base64               = { version = "0.21.5" }
 cosmrs               = { version = "0.15.0", features = [ "cosmwasm", "rpc" ] }
 cosmwasm-std         = { version = "2.1.0", features = [ "abort", "cosmwasm_1_2", "cosmwasm_1_3", "cosmwasm_1_4", "cosmwasm_2_0", "iterator", "stargate" ] }
 hex                  = { version = "0.4.2" }
-margined-neutron-std = { version = "4.2.3-slinky" }
+margined-neutron-std = { version = "=4.2.3-slinky" }
 prost                = { version = "0.12.6" }
 serde                = { version = "1.0.144" }
 serde_json           = { version = "1.0.85" }
