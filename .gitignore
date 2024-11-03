@@ -2,7 +2,7 @@
 # will have compiled files and executables
 debug/
 target/
-packages/neutron-test-tube/libneutrontesttube/neutron-test-tube
+packages/neutron-test-tube/libntrntesttube/neutron-test-tube
 
 .idea
 
