@@ -11,7 +11,7 @@ version     = "0.1.7"
 [dependencies]
 base64       = { version = "0.21.5" }
 cosmrs       = { version = "0.20.0", features = [ "cosmwasm", "rpc" ] }
-cosmwasm-std = { version = "2.1.4" }
+cosmwasm-std = { version = "2.1.4", features = [ "stargate" ] }
 prost        = { version = "0.13.3", features = [ "prost-derive" ] }
 serde        = { version = "1.0.144" }
 serde_json   = { version = "1.0.85" }
