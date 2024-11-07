@@ -1,5 +1,5 @@
 use cosmrs::Any;
-use cosmwasm_std::Coin;
+use cosmwasm_std::{Coin, Timestamp};
 use prost::Message;
 use test_tube_ntrn::account::SigningAccount;
 
@@ -33,6 +33,11 @@ impl NeutronTestApp {
                 DEFAULT_GAS_ADJUSTMENT,
             ),
         }
+    }
+
+    /// Get the current block time as a timestamp
+    pub fn get_block_timestamp(&self) -> Timestamp {
+        self.inner.get_block_timestamp()
     }
 
     /// Get the current block time in nanoseconds

@@ -7,7 +7,7 @@ use cosmrs::proto::tendermint::v0_38::abci::ResponseFinalizeBlock;
 use cosmrs::tx;
 use cosmrs::tx::{Fee, SignerInfo};
 use cosmrs::Any;
-use cosmwasm_std::Coin;
+use cosmwasm_std::{Coin, Timestamp};
 use prost::Message;
 use serde::Serialize;
 
@@ -133,6 +133,13 @@ impl BaseApp {
         );
 
         Ok(validator)
+    }
+
+    /// Get the current block time
+    pub fn get_block_timestamp(&self) -> Timestamp {
+        let result = unsafe { GetBlockTime(self.id) };
+
+        Timestamp::from_nanos(result as u64)
     }
 
     /// Get the current block time
