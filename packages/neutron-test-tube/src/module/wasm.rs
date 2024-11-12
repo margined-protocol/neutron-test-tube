@@ -1,5 +1,6 @@
+use cosmwasm_std::Coin;
 use margined_neutron_std::types::{
-    cosmos::base::v1beta1::Coin,
+    cosmos::base::v1beta1::Coin as BaseCoin,
     cosmwasm::wasm::v1::{
         AccessConfig, MsgExecuteContract, MsgExecuteContractResponse, MsgInstantiateContract,
         MsgInstantiateContractResponse, MsgMigrateContract, MsgMigrateContractResponse,
@@ -68,9 +69,9 @@ where
                 msg: serde_json::to_vec(msg).map_err(EncodeError::JsonEncodeError)?,
                 funds: funds
                     .iter()
-                    .map(|c| Coin {
+                    .map(|c| BaseCoin {
                         denom: c.denom.parse().unwrap(),
-                        amount: c.amount.to_string(),
+                        amount: format!("{}", c.amount.u128()),
                     })
                     .collect(),
             },
@@ -95,9 +96,9 @@ where
                 msg: serde_json::to_vec(msg).map_err(EncodeError::JsonEncodeError)?,
                 funds: funds
                     .iter()
-                    .map(|c| Coin {
+                    .map(|c| BaseCoin {
                         denom: c.denom.parse().unwrap(),
-                        amount: c.amount.to_string(),
+                        amount: format!("{}", c.amount.u128()),
                     })
                     .collect(),
                 contract: contract.to_owned(),

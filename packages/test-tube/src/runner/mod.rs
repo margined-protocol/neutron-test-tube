@@ -57,6 +57,7 @@ pub trait Runner<'a> {
                     type_url: type_url.clone(),
                     value: value.to_vec(),
                 }),
+                #[cfg(feature = "cosmwasm_2_0")]
                 CosmosMsg::Any(msg) => Ok(cosmrs::Any {
                     type_url: msg.type_url.clone(),
                     value: msg.value.to_vec(),

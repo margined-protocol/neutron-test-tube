@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## 5.0.1 - 2024-11-12
+
+### Changed
+
+- Updated to `neutron@5.0.1`
+
+## 5.0.0-patch1 - 2024-11-07
+
+### Changed
+
+- Updated to new core test tube version
+
 ## 5.0.0 - 2024-11-03
 
 ### Changed
