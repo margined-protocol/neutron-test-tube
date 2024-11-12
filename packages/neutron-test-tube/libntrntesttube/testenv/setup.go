@@ -22,7 +22,6 @@ import (
 
 	// cosmos sdk
 	"github.com/cosmos/cosmos-sdk/baseapp"
-	"github.com/cosmos/cosmos-sdk/client/flags"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	cryptocodec "github.com/cosmos/cosmos-sdk/crypto/codec"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
@@ -78,9 +77,8 @@ func (m DebugAppOptions) Get(key string) interface{} {
 	return v
 }
 
-func NewDebugAppOptionsWithFlagHome(homePath string) servertypes.AppOptions {
+func NewDebugAppOptionsWithFlagHome() servertypes.AppOptions {
 	return DebugAppOptions{
-		flags.FlagHome:   homePath,
 		server.FlagTrace: true,
 	}
 }
@@ -100,7 +98,7 @@ func NewNeutronApp(nodeHome string) *app.App {
 		nodeHome,
 		0,
 		encCfg,
-		DebugAppOptions{},
+		NewDebugAppOptionsWithFlagHome(),
 		emptyWasmOpts,
 		baseapp.SetChainID("neutron-666"),
 	)
