@@ -235,6 +235,7 @@ mod tests {
             quote: "USDC".to_string(),
             price: 5012345u128,
         }]);
+        let timestamp = app.get_block_timestamp();
 
         let res = slinky
             .get_price(&OracleTypes::GetPriceRequest {
@@ -244,6 +245,33 @@ mod tests {
                 }),
             })
             .unwrap();
-        assert_eq!(res.price.unwrap().price, "5012345".to_string());
+
+        let price = res.price.unwrap();
+        assert_eq!(price.price, "5012345".to_string());
+        assert_eq!(
+            price.block_timestamp.unwrap().seconds,
+            timestamp.seconds() as i64
+        );
+        assert_eq!(price.block_height, 6);
+
+        app.increase_time(10);
+
+        // see what happens in
+        let res = slinky
+            .get_price(&OracleTypes::GetPriceRequest {
+                currency_pair: Some(CurrencyPair {
+                    base: "NTRN".to_string(),
+                    quote: "USDC".to_string(),
+                }),
+            })
+            .unwrap();
+
+        let price = res.price.unwrap();
+        assert_eq!(price.price, "5012345".to_string());
+        assert_eq!(
+            price.block_timestamp.unwrap().seconds,
+            timestamp.seconds() as i64
+        );
+        assert_eq!(price.block_height, 6);
     }
 }
