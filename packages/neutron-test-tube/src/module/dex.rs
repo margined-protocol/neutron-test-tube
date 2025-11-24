@@ -39,6 +39,10 @@ where
     }
 
     fn_execute! {
+        pub withdrawal_with_shares: DexTypes::MsgWithdrawalWithShares["/neutron.dex.MsgWithdrawalWithShares"] => DexTypes::MsgWithdrawalResponse
+    }
+
+    fn_execute! {
         pub withdraw_filled_limit_order: DexTypes::MsgWithdrawFilledLimitOrder["/neutron.dex.MsgWithdrawFilledLimitOrder"] => DexTypes::MsgWithdrawFilledLimitOrderResponse
     }
 
