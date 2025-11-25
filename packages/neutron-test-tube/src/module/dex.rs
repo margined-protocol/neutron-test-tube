@@ -111,7 +111,7 @@ where
     }
 
     fn_query! {
-        pub simulate_withdrawal_with_shares ["/neutron.dex.Query/SimulateWithdrawWithShares"]: DexTypes::QuerySimulateWithdrawalWithSharesRequest => DexTypes::QuerySimulateWithdrawalResponse
+        pub simulate_withdrawal_with_shares ["/neutron.dex.Query/SimulateWithdrawalWithShares"]: DexTypes::QuerySimulateWithdrawalWithSharesRequest => DexTypes::QuerySimulateWithdrawalResponse
     }
 
     fn_query! {
