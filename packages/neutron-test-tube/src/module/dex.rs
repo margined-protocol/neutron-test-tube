@@ -103,6 +103,34 @@ where
     }
 
     fn_query! {
+        pub simulate_deposit ["/neutron.dex.Query/SimulateDeposit"]: DexTypes::QuerySimulateDepositRequest => DexTypes::QuerySimulateDepositResponse
+    }
+
+    fn_query! {
+        pub simulate_withdrawal ["/neutron.dex.Query/SimulateWithdraw"]: DexTypes::QuerySimulateWithdrawalRequest => DexTypes::QuerySimulateWithdrawalResponse
+    }
+
+    fn_query! {
+        pub simulate_withdrawal_with_shares ["/neutron.dex.Query/SimulateWithdrawWithShares"]: DexTypes::QuerySimulateWithdrawalWithSharesRequest => DexTypes::QuerySimulateWithdrawalResponse
+    }
+
+    fn_query! {
+        pub simulate_place_limit_order ["/neutron.dex.Query/SimulatePlaceLimitOrder"]: DexTypes::QuerySimulatePlaceLimitOrderRequest => DexTypes::QuerySimulatePlaceLimitOrderResponse
+    }
+
+    fn_query! {
+        pub simulate_withdraw_filled_limit_order ["/neutron.dex.Query/SimulateWithdrawFilledLimitOrder"]: DexTypes::QuerySimulateWithdrawFilledLimitOrderRequest => DexTypes::QuerySimulateWithdrawFilledLimitOrderResponse
+    }
+
+    fn_query! {
+        pub simulate_cancel_limit_order ["/neutron.dex.Query/SimulateCancelLimitOrder"]: DexTypes::QuerySimulateCancelLimitOrderRequest => DexTypes::QuerySimulateCancelLimitOrderResponse
+    }
+
+    fn_query! {
+        pub simulate_multi_hop_swap ["/neutron.dex.Query/SimulateMultiHopSwap"]: DexTypes::QuerySimulateMultiHopSwapRequest => DexTypes::QuerySimulateMultiHopSwapResponse
+    }
+
+    fn_query! {
         pub pool ["/neutron.dex.Query/Pool"]: DexTypes::QueryPoolRequest => DexTypes::QueryPoolResponse
     }
 
