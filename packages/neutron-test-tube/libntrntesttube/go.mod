@@ -224,9 +224,9 @@ replace (
 	// github.com/CosmWasm/wasmd => github.com/neutron-org/wasmd v0.51.0
 	// github.com/cosmos/cosmos-sdk => github.com/neutron-org/cosmos-sdk v0.50.7-neutron
 	// github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
-	github.com/CosmWasm/wasmd => github.com/neutron-org/wasmd v0.51.0
-	github.com/cosmos/admin-module/v2 => github.com/neutron-org/admin-module/v2 v2.0.0
-	github.com/cosmos/cosmos-sdk => github.com/neutron-org/cosmos-sdk v0.50.7-neutron
+	github.com/CosmWasm/wasmd => github.com/neutron-org/wasmd v0.54.3-neutron
+	github.com/cosmos/admin-module/v2 => github.com/neutron-org/admin-module/v2 v2.0.3
+	github.com/cosmos/cosmos-sdk => github.com/neutron-org/cosmos-sdk v0.50.13-neutron.0.20250512094026-b5afd837c4de
 
 	// Not sure why exactly we need this looking at deps but go.mod isn't
 	// happy without it.
@@ -239,5 +239,6 @@ replace (
 	github.com/cosmos/iavl => github.com/cosmos/iavl v1.2.0
 	github.com/gogo/protobuf => github.com/regen-network/protobuf v1.3.3-alpha.regen.1
 	github.com/prometheus/procfs => github.com/prometheus/procfs v0.12.0
+	github.com/skip-mev/feemarket => github.com/neutron-org/feemarket v0.0.0-20250127141246-4ffcf3d43464
 	github.com/syndtr/goleveldb => github.com/syndtr/goleveldb v1.0.1-0.20210819022825-2ae1ddf74ef7
 )
