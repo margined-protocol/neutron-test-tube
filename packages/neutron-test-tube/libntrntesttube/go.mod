@@ -12,7 +12,7 @@ require (
 	github.com/cosmos/cosmos-db v1.1.1
 	github.com/cosmos/cosmos-sdk v0.50.14
 	github.com/cosmos/gogoproto v1.7.0
-	github.com/neutron-org/neutron/v9 v9.0.1-0.20251125183710-ef6368d16132
+	github.com/neutron-org/neutron/v9 v9.0.1-0.20251126011005-6b0b3d905423
 	github.com/pkg/errors v0.9.1
 	github.com/skip-mev/slinky v1.2.0
 )
