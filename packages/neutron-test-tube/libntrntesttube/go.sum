@@ -838,10 +838,8 @@ github.com/neutron-org/cosmos-sdk v0.50.13-neutron.0.20250512094026-b5afd837c4de
 github.com/neutron-org/cosmos-sdk v0.50.13-neutron.0.20250512094026-b5afd837c4de/go.mod h1:hrWEFMU1eoXqLJeE6VVESpJDQH67FS1nnMrQIjO2daw=
 github.com/neutron-org/feemarket v0.0.0-20250127141246-4ffcf3d43464 h1:5mbzd7sqp8pPYWzIhIYKFovMRBL0ru24N2E6dIWjL0o=
 github.com/neutron-org/feemarket v0.0.0-20250127141246-4ffcf3d43464/go.mod h1:DUa6djUsTeMOrbrcIZqWSVxU9IZNCXp96ruaojyBNpc=
-github.com/neutron-org/neutron/v9 v9.0.1-0.20251125183710-ef6368d16132 h1:uigBByGV4U8lUrU6RnzWdee9i55/qhxLlkp94tP9taA=
-github.com/neutron-org/neutron/v9 v9.0.1-0.20251125183710-ef6368d16132/go.mod h1:BtINDwNXwLXDwGeOvzkDxshfaFlmWrdaiUjVGbg9GEo=
-github.com/neutron-org/neutron/v9 v9.0.1-0.20251126011005-6b0b3d905423 h1:PwEKWDgSEeF3X4cjqSznEJ1Dr5gCrdYq0g1iPpgRKeQ=
-github.com/neutron-org/neutron/v9 v9.0.1-0.20251126011005-6b0b3d905423/go.mod h1:BtINDwNXwLXDwGeOvzkDxshfaFlmWrdaiUjVGbg9GEo=
+github.com/neutron-org/neutron/v9 v9.0.1-0.20251126033352-0262842c8dd8 h1:4CEnOfH4zkaxda7P+tClsy4JGugpT2gtVVyCzijUNVs=
+github.com/neutron-org/neutron/v9 v9.0.1-0.20251126033352-0262842c8dd8/go.mod h1:BtINDwNXwLXDwGeOvzkDxshfaFlmWrdaiUjVGbg9GEo=
 github.com/neutron-org/wasmd v0.54.3-neutron h1:so+figs8104F32Ttx0Ik6ThNQ0iC9uNzLxfOXBtcsI0=
 github.com/neutron-org/wasmd v0.54.3-neutron/go.mod h1:2FX9+3mf0FmlRHUoUwF8Vg/kkNdtey9TogE5N6nX4Ng=
 github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e/go.mod h1:zD1mROLANZcx1PVRCS0qkT7pwLkGfwJo4zjcN/Tysno=
