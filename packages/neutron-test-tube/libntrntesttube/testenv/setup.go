@@ -67,7 +67,7 @@ func (ao DebugAppOptions) Get(o string) interface{} {
 		return uint64(5_000_000)
 	}
 	if o == "wasm.query_gas_limit" {
-		return uint64(5_000_000)
+		return uint64(50_000_000)
 	}
 	return nil
 }
