@@ -10,7 +10,7 @@ use test_tube_ntrn::BaseApp;
 const FEE_DENOM: &str = "untrn";
 const NEUTRON_ADDRESS_PREFIX: &str = "neutron";
 const CHAIN_ID: &str = "neutron-666";
-const DEFAULT_GAS_ADJUSTMENT: f64 = 1.2;
+const DEFAULT_GAS_ADJUSTMENT: f64 = 5.2;
 
 #[derive(Debug, PartialEq)]
 pub struct NeutronTestApp {
