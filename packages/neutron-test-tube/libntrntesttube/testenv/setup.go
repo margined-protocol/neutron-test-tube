@@ -63,6 +63,9 @@ func (ao DebugAppOptions) Get(o string) interface{} {
 	if o == server.FlagTrace {
 		return true
 	}
+	if o == server.FlagQueryGasLimit {
+		return uint64(5_000_000)
+	}
 	if o == "wasm.query_gas_limit" {
 		return uint64(5_000_000)
 	}
